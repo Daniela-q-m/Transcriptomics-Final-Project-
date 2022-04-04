@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=5:00:00
+#SBATCH --mem=8GB
+#SBATCH --job-name=sra_toolkit_1
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=tt61@nyu.edu
+
+module purge
+
+module load sra-tools/2.10.9
+
+fastq-dump -I --split-files --gzip $(</scratch/tt61/transcriptomics/SRR_Acc_List.txt)
