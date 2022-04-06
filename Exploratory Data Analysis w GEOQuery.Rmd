@@ -41,4 +41,16 @@ metadata.modified <- metadata %>%
 ```{r}
 metadata.modified
 ```
+```{r}
+#Further clean up metadata information
+#Rename age and sample column, remove 'age_months' and 'sample_id' string
+#Rename characteristics_ch1.3 to mouse_model, remove string 'mouse_model: '
+metadata.modified<-metadata.modified %>%
+  #rename(age= characteristics_ch1.1) %>%
+  #mutate(age = gsub("age_months: ", "", age)) 
+  #rename(sample= characteristics_ch1.2)
+  #mutate(sample = gsub("sample_id: ", "", sample))
+  rename(mouse_model= characteristics_ch1.3) %>%
+  mutate(mouse_model = gsub("mouse_model: ", "", mouse_model))
+```
 
