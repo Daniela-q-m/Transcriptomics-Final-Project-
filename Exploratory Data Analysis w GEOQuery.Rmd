@@ -1,0 +1,44 @@
+---
+title: "Exploratory Data Analysis w GEOQuery"
+output: html_notebook
+---
+
+The purpose of this notebook is to conduct exploratory data analysis on the dataset using GEOQuery. 
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(GEOquery)
+```
+
+```{r}
+df<- read.csv( file = '/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/GSE125957_processed_data .csv')
+dim(df)
+```
+```{r}
+head(df)
+```
+
+```{r}
+gse <- getGEO(GEO = 'GSE125957', GSEMatrix = TRUE)
+```
+```{r}
+gse
+```
+```{r}
+#Get metadata, here we can see that there are 121 rows representing 121 samples
+metadata <- pData(phenoData(gse[[1]])) #First object of the first element in the list. 
+metadata
+```
+```{r}
+#Here we select certain columns of the metadata in order to obtain more information about the samples
+metadata.modified <- metadata %>%
+  select(1,2,11,12,13,14) 
+  #rename(diagnosis= characteristics_ch1.2) %>%
+  #rename( sample=title ) %>%
+  #mutate(diagnosis = gsub("diagnosis: ", "", diagnosis)) 
+```
+```{r}
+metadata.modified
+```
+
