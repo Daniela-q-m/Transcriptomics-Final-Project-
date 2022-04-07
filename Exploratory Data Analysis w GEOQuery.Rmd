@@ -89,4 +89,11 @@ data_long_joined %>% #filter(gene_name %in% genes_list) %>%
   summarize(mean_FPKM = mean(FPKM), median_FPKM = median(FPKM)) %>%
   arrange(-mean_FPKM)
 ```
+```{r}
+#Here we can visualize the FPKM metrics of a gene we are interested in 
+data_long_joined %>%
+  filter(X == 'Slc1a2') %>%
+  ggplot(., aes(x = samples, y = FPKM, fill = mouse_model)) +
+  geom_col()
+```
 
