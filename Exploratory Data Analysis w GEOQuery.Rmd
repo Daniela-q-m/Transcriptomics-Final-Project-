@@ -94,6 +94,14 @@ data_long_joined %>% #filter(gene_name %in% genes_list) %>%
 data_long_joined %>%
   filter(X == 'Slc1a2') %>%
   ggplot(., aes(x = samples, y = FPKM, fill = mouse_model)) +
-  geom_col()
+  geom_col()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=4.5))
+```
+```{r}
+#We can also provide a list of genes that we are interested in to create a heat map
+data_long_joined  %>%
+  filter(X == 'Slc1a2') %>%
+  ggplot(., aes(x = samples, y = X, fill = FPKM)) +
+  geom_tile() +
+  scale_fill_gradient( low = "blue", high = "pink")+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=4.5))
 ```
 
