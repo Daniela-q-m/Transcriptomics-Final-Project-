@@ -83,4 +83,10 @@ data_long_joined <- df_long %>%
 ```{r}
 data_long_joined
 ```
+```{r}
+data_long_joined %>% #filter(gene_name %in% genes_list) %>%
+  group_by(X,mouse_model) %>%
+  summarize(mean_FPKM = mean(FPKM), median_FPKM = median(FPKM)) %>%
+  arrange(-mean_FPKM)
+```
 
