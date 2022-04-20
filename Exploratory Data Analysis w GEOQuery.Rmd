@@ -104,3 +104,10 @@ data_long_joined  %>%
   geom_tile() +
   scale_fill_gradient( low = "blue", high = "pink")+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=4.5))
 ```
+```{r}
+data_long_joined %>% #filter(gene_name %in% genes_list) %>%
+  group_by(X,mouse_model) %>%
+  summarize(mean_FPKM = mean(FPKM), median_FPKM = median(FPKM)) %>%
+  arrange(-mean_FPKM)
+```
+
