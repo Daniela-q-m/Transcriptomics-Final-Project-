@@ -220,6 +220,18 @@ pre code {
 
 <!-- rnb-text-begin -->
 <p>The purpose of this notebook is to conduct a differential gene expression analysis with the data obtained from: Castanho I, Murray TK, Hannon E, Jeffries A et al. Transcriptional Signatures of Tau and Amyloid Neuropathology. Cell Rep 2020 Feb 11;30(6):2040-2054.e5. PMID: 32049030</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5saWJyYXJ5KGRwbHlyKVxuXG5saWJyYXJ5KHBoZWF0bWFwKVxuXG5saWJyYXJ5KGdncGxvdDIpXG5gYGAifQ== -->
+<pre class="r"><code>
+library(dplyr)
+
+library(pheatmap)
+
+library(ggplot2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <div id="step-1-downloa-files-from-hpc" class="section level3">
 <h3>Step 1: Downloa files from HPC</h3>
 <p>Transfer files from HPC to Google drive. The files that are being transferred here are the gene count fiels that were produced by STAR.</p>
@@ -238,60 +250,112 @@ pre code {
 <p>Import the counts for the J20 mouse line:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuI0ltcG9ydCBmaWxlIGNvbnRhaW5pbmcgdGhlIFNSQSBJRHMgZnJvbSBIUEMgdG8gR29vZ2xlIERyaXZlXG5cbltkcTIwMzNAbG9nLTIgSjIwX3NhbXBsZXNdJCByY2xvbmUgY29weSAvc2NyYXRjaC9kcTIwMzMvdHJhbnNjcmlwdG9taWNzL0oyMF9zYW1wbGVzL1NSUl9BY2NfTGlzdF9KMjBfNm1fMTJtLnR4dCAgbXlnb29nbGVkcml2ZTpocGNfdXBsb2Fkc1xuXG5gYGAifQ== -->
-<pre class="bash"><code>#Import file containing the SRA IDs from HPC to Google Drive
-
-[dq2033@log-2 J20_samples]$ rclone copy /scratch/dq2033/transcriptomics/J20_samples/SRR_Acc_List_J20_6m_12m.txt  mygoogledrive:hpc_uploads
-</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI09wZW4gdGhlIGZpbGUgY29udGFpbmluZyB0aGUgU1JBIElEcyBvZiB0aGUgSjIwIHNhbXBsZXMgYW5kIHJUZzQ1MTAgc2FtcGxlc1xuSjIwX3NhbXBsZXM8LVxuXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI09wZW4gdGhlIGZpbGUgY29udGFpbmluZyB0aGUgU1JBIElEcyBvZiB0aGUgSjIwIHNhbXBsZXMgYW5kIHJUZzQ1MTAgc2FtcGxlc1xuSjIwX3NhbXBsZXM8LXJlYWQuZGVsaW0oJy9Vc2Vycy9kYW5pZWxhcXVpamFuby9Eb2N1bWVudHMvR2l0SHViL1RyYW5zY3JpcHRvbWljcy1GaW5hbC1Qcm9qZWN0LS9EYXRhX1JldHJpZXZhbC9TUlJfQWNjX0xpc3RfSjIwXzZtXzEybS50eHQnLGhlYWRlcj1GQUxTRSlcblxuYGBgIn0= -->
 <pre class="r"><code>#Open the file containing the SRA IDs of the J20 samples and rTg4510 samples
-J20_samples&lt;-
+J20_samples&lt;-read.delim(&#39;/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Data_Retrieval/SRR_Acc_List_J20_6m_12m.txt&#39;,header=FALSE)
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuSjIwX3NhbXBsZXNcbmBgYCJ9 -->
+<pre class="r"><code>J20_samples</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuSjIwX3NhbXBsZXNbMV1cbmBgYCJ9 -->
+<pre class="r"><code>J20_samples[1]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuclRnNDUxMF9zYW1wbGVzPC1cbmBgYCJ9 -->
 <pre class="r"><code>rTg4510_samples&lt;-</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1xuc2FtcGxlX25hbWVzIDwtIGMoJ1BEQUMyNTMnLCdQREFDMjgyJywnUERBQzI4NicsJ1BEQUMzMTYnLCdQREFDMjY2JywnUERBQzI3MycsJ1BEQUMzMDYnLCdQREFDMzE4JylcbnNhbXBsZV9jb25kaXRpb25fbW91c2VfbW9kZWwgPC0gYyhyZXAoJ2hpZ2hTdWNyb3NlJyw0KSxyZXAoJ2xvd1N1Y3Jvc2UnLDQpKVxuc2FtcGxlX2NvbmRpdGlvbl9tb3VzZV9hZ2U8LWMocmVwKCdoaWdoU3Vjcm9zZScsNCkscmVwKCdsb3dTdWNyb3NlJyw0KSlcbmBgYCJ9 -->
-<pre class="r"><code>#
-sample_names &lt;- c(&#39;PDAC253&#39;,&#39;PDAC282&#39;,&#39;PDAC286&#39;,&#39;PDAC316&#39;,&#39;PDAC266&#39;,&#39;PDAC273&#39;,&#39;PDAC306&#39;,&#39;PDAC318&#39;)
-sample_condition_mouse_model &lt;- c(rep(&#39;highSucrose&#39;,4),rep(&#39;lowSucrose&#39;,4))
-sample_condition_mouse_age&lt;-c(rep(&#39;highSucrose&#39;,4),rep(&#39;lowSucrose&#39;,4))</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuclRnNDUxMF9zYW1wbGVzWzFdXG5gYGAifQ== -->
+<pre class="r"><code>rTg4510_samples[1]</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmlsZXMgPC0gZmlsZS5wYXRoKCcvVXNlcnMvZGFuaWVsYXF1aWphbm8vRG9jdW1lbnRzL05ZVSBNYXN0ZXJzL1NQUklORyAyMDIyL05HUyBDbGFzcy9XZWVrMTAnLHBhc3RlKHNhbXBsZV9uYW1lcyxcIlJlYWRzUGVyR2VuZS5vdXQudGFiXCIsc2VwPVwiXCIpKVxuYGBgIn0= -->
-<pre class="r"><code>files &lt;- file.path(&#39;/Users/danielaquijano/Documents/NYU Masters/SPRING 2022/NGS Class/Week10&#39;,paste(sample_names,&quot;ReadsPerGene.out.tab&quot;,sep=&quot;&quot;))</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5zYW1wbGVfbmFtZXMgPC1jYmluZChKMjBfc2FtcGxlc1sxXSwpXG5zYW1wbGVfY29uZGl0aW9uX21vdXNlX21vZGVsIDwtIGMocmVwKCdKMjAnLDQyKSxyZXAoJ3JUZzQ1MTAnLDMwKSlcbnNhbXBsZV9jb25kaXRpb25fbW91c2VfYWdlPC1jKHJlcCgnNicsNCkscmVwKCcxMicsNCkscmVwKCcxMicsNCkpXG5gYGAifQ== -->
+<pre class="r"><code>
+sample_names &lt;-cbind(J20_samples[1],)
+sample_condition_mouse_model &lt;- c(rep(&#39;J20&#39;,42),rep(&#39;rTg4510&#39;,30))
+sample_condition_mouse_age&lt;-c(rep(&#39;6&#39;,4),rep(&#39;12&#39;,4),rep(&#39;12&#39;,4))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0ZpbGUgcGF0aCBEYW5pZWxhXG5maWxlcyA8LSBmaWxlLnBhdGgoJy9Vc2Vycy9kYW5pZWxhcXVpamFuby9Eb2N1bWVudHMvR2l0SHViL1RyYW5zY3JpcHRvbWljcy1GaW5hbC1Qcm9qZWN0L3NvdXJjZV9maWxlcycscGFzdGUoc2FtcGxlX25hbWVzLFwiUmVhZHNQZXJHZW5lLm91dC50YWJcIixzZXA9XCJcIikpXG5gYGAifQ== -->
+<pre class="r"><code>#File path Daniela
+files &lt;- file.path(&#39;/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project/source_files&#39;,paste(sample_names,&quot;ReadsPerGene.out.tab&quot;,sep=&quot;&quot;))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0ZpbGUgcGF0aCBUYXNuaW1cblxuXG5gYGAifQ== -->
+<pre class="r"><code>#File path Tasnim
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubmFtZXMoZmlsZXMpIDwtIHNhbXBsZV9uYW1lc1xuYGBgIn0= -->
 <pre class="r"><code>names(files) &lt;- sample_names</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Create a matrix of gene counts from the count data outputted by STAR. We need to check whether the library preparation was stranded or unstranded. In order to do this, we can count the number of reads mapped to each strand in a sample with awk:</p>
+<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0NoZWNrIHRoYXQgZmlsZXBhdGhzIGNyZWF0ZWQgaW4gZmlsZXMgYWN0dWFsbHkgZXhpc3QgYnkgcHJpbnRpbmcgZmlsZXMgYW5kIG1ha2luZyBzdXJlIGZpbGUuZXhpc3RzKCk9VFxuIGZpbGUuZXhpc3RzKCcvVXNlcnMvZGFuaWVsYXF1aWphbm8vRG9jdW1lbnRzL05ZVSBNYXN0ZXJzL1NQUklORyAyMDIyL05HUyBDbGFzcy9XZWVrMTAvUERBQzI1My50cmFuc2NyaXB0c19xdWFudC9xdWFudC5zZicpXG5gYGAifQ== -->
-<pre class="r"><code>#Check that filepaths created in files actually exist by printing files and making sure file.exists()=T
- file.exists(&#39;/Users/danielaquijano/Documents/NYU Masters/SPRING 2022/NGS Class/Week10/PDAC253.transcripts_quant/quant.sf&#39;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgYmFzaFxuW2RxMjAzM0Bsb2ctMiBTUlI4NTEyMzY1XSQgZ3JlcCAtdiBcIk5fXCIgU1JSODUxMjM2NVJlYWRzUGVyR2VuZS5vdXQudGFiIHwgYXdrICd7dW5zdCs9JDI7Zm9ydys9JDM7cmV2Kz0kNH1FTkR7cHJpbnQgdW5zdCxmb3J3LHJldn0nXG44Nzc5ODUzIDg4NzA5MTYgMzE0NjgwXG5gYGAifQ== -->
+<pre class="bash"><code>[dq2033@log-2 SRR8512365]$ grep -v &quot;N_&quot; SRR8512365ReadsPerGene.out.tab | awk &#39;{unst+=$2;forw+=$3;rev+=$4}END{print unst,forw,rev}&#39;
+8779853 8870916 314680</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZm9yIChmaWxlIGluIGZpbGVzKSB7XG4gIHJlYWQudGFibGUoZmlsZSxzZXA9XCJcXHRcIiwgaGVhZGVyPVRSVUUpXG4gIFxufVxuYGBgIn0= -->
+<pre class="r"><code>for (file in files) {
+  read.table(file,sep=&quot;\t&quot;, header=TRUE)
+  
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHJpbnQoZmlsZXMpXG5gYGAifQ== -->
+<pre class="r"><code>print(files)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>***** check design for deseq with two conditions *****</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5zYW1wbGVzIDwtIGRhdGEuZnJhbWUoc2FtcGxlX25hbWVzPXNhbXBsZV9uYW1lcyxjb25kaXRpb25fYT1zYW1wbGVfY29uZGl0aW9uX21vdXNlX21vZGVsLCBjb25kaXRpb25fYj1zYW1wbGVfY29uZGl0aW9uX21vdXNlX2FnZSlcbnJvdy5uYW1lcyhzYW1wbGVzKSA8LSBzYW1wbGVfbmFtZXNcbmBgYCJ9 -->
+<pre class="r"><code>
+samples &lt;- data.frame(sample_names=sample_names,condition_a=sample_condition_mouse_model, condition_b=sample_condition_mouse_age)
+row.names(samples) &lt;- sample_names</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiREVTRVEyIEFuYWx5c2lzLCBUYXUvQW15bG9pZCBNb3VzZSBMaW5lcyIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKVGhlIHB1cnBvc2Ugb2YgdGhpcyBub3RlYm9vayBpcyB0byBjb25kdWN0IGEgZGlmZmVyZW50aWFsIGdlbmUgZXhwcmVzc2lvbiBhbmFseXNpcyB3aXRoIHRoZSBkYXRhIG9idGFpbmVkIGZyb206CkNhc3RhbmhvIEksIE11cnJheSBUSywgSGFubm9uIEUsIEplZmZyaWVzIEEgZXQgYWwuIFRyYW5zY3JpcHRpb25hbCBTaWduYXR1cmVzIG9mIFRhdSBhbmQgQW15bG9pZCBOZXVyb3BhdGhvbG9neS4gQ2VsbCBSZXAgMjAyMCBGZWIgMTE7MzAoNik6MjA0MC0yMDU0LmU1LiBQTUlEOiAzMjA0OTAzMAoKIyMjIFN0ZXAgMTogRG93bmxvYSBmaWxlcyBmcm9tIEhQQwpUcmFuc2ZlciBmaWxlcyBmcm9tIEhQQyB0byBHb29nbGUgZHJpdmUuIFRoZSBmaWxlcyB0aGF0IGFyZSBiZWluZyB0cmFuc2ZlcnJlZCBoZXJlIGFyZSB0aGUgZ2VuZSBjb3VudCBmaWVscyB0aGF0IHdlcmUgcHJvZHVjZWQgYnkgU1RBUi4gCgpgYGB7YmFzaH0KI0luc2VydCBSY2xvbmUgY29tbWFuZCBKMjAgaGVyZQpgYGAKYGBge2Jhc2h9CiNJbnNlcnQgcmNsb25lIGNvbW1hbmQgSyBoZXJlCmBgYAoKCkltcG9ydCB0aGUgY291bnRzIGZvciB0aGUgSjIwIG1vdXNlIGxpbmU6CgpgYGB7YmFzaH0KI0ltcG9ydCBmaWxlIGNvbnRhaW5pbmcgdGhlIFNSQSBJRHMgZnJvbSBIUEMgdG8gR29vZ2xlIERyaXZlCgpbZHEyMDMzQGxvZy0yIEoyMF9zYW1wbGVzXSQgcmNsb25lIGNvcHkgL3NjcmF0Y2gvZHEyMDMzL3RyYW5zY3JpcHRvbWljcy9KMjBfc2FtcGxlcy9TUlJfQWNjX0xpc3RfSjIwXzZtXzEybS50eHQgIG15Z29vZ2xlZHJpdmU6aHBjX3VwbG9hZHMKCmBgYAoKYGBge3J9CiNPcGVuIHRoZSBmaWxlIGNvbnRhaW5pbmcgdGhlIFNSQSBJRHMgb2YgdGhlIEoyMCBzYW1wbGVzIGFuZCByVGc0NTEwIHNhbXBsZXMKSjIwX3NhbXBsZXM8LQoKYGBgCmBgYHtyfQpyVGc0NTEwX3NhbXBsZXM8LQpgYGAKCmBgYHtyfQojCnNhbXBsZV9uYW1lcyA8LSBjKCdQREFDMjUzJywnUERBQzI4MicsJ1BEQUMyODYnLCdQREFDMzE2JywnUERBQzI2NicsJ1BEQUMyNzMnLCdQREFDMzA2JywnUERBQzMxOCcpCnNhbXBsZV9jb25kaXRpb25fbW91c2VfbW9kZWwgPC0gYyhyZXAoJ2hpZ2hTdWNyb3NlJyw0KSxyZXAoJ2xvd1N1Y3Jvc2UnLDQpKQpzYW1wbGVfY29uZGl0aW9uX21vdXNlX2FnZTwtYyhyZXAoJ2hpZ2hTdWNyb3NlJyw0KSxyZXAoJ2xvd1N1Y3Jvc2UnLDQpKQpgYGAKCmBgYHtyfQpmaWxlcyA8LSBmaWxlLnBhdGgoJy9Vc2Vycy9kYW5pZWxhcXVpamFuby9Eb2N1bWVudHMvTllVIE1hc3RlcnMvU1BSSU5HIDIwMjIvTkdTIENsYXNzL1dlZWsxMCcscGFzdGUoc2FtcGxlX25hbWVzLCJSZWFkc1BlckdlbmUub3V0LnRhYiIsc2VwPSIiKSkKYGBgCmBgYHtyfQpuYW1lcyhmaWxlcykgPC0gc2FtcGxlX25hbWVzCmBgYApgYGB7cn0KI0NoZWNrIHRoYXQgZmlsZXBhdGhzIGNyZWF0ZWQgaW4gZmlsZXMgYWN0dWFsbHkgZXhpc3QgYnkgcHJpbnRpbmcgZmlsZXMgYW5kIG1ha2luZyBzdXJlIGZpbGUuZXhpc3RzKCk9VAogZmlsZS5leGlzdHMoJy9Vc2Vycy9kYW5pZWxhcXVpamFuby9Eb2N1bWVudHMvTllVIE1hc3RlcnMvU1BSSU5HIDIwMjIvTkdTIENsYXNzL1dlZWsxMC9QREFDMjUzLnRyYW5zY3JpcHRzX3F1YW50L3F1YW50LnNmJykKYGBgCgoK</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiREVTRVEyIEFuYWx5c2lzLCBUYXUvQW15bG9pZCBNb3VzZSBMaW5lcyIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKVGhlIHB1cnBvc2Ugb2YgdGhpcyBub3RlYm9vayBpcyB0byBjb25kdWN0IGEgZGlmZmVyZW50aWFsIGdlbmUgZXhwcmVzc2lvbiBhbmFseXNpcyB3aXRoIHRoZSBkYXRhIG9idGFpbmVkIGZyb206CkNhc3RhbmhvIEksIE11cnJheSBUSywgSGFubm9uIEUsIEplZmZyaWVzIEEgZXQgYWwuIFRyYW5zY3JpcHRpb25hbCBTaWduYXR1cmVzIG9mIFRhdSBhbmQgQW15bG9pZCBOZXVyb3BhdGhvbG9neS4gQ2VsbCBSZXAgMjAyMCBGZWIgMTE7MzAoNik6MjA0MC0yMDU0LmU1LiBQTUlEOiAzMjA0OTAzMAoKYGBge3J9CgpsaWJyYXJ5KGRwbHlyKQoKbGlicmFyeShwaGVhdG1hcCkKCmxpYnJhcnkoZ2dwbG90MikKYGBgCgoKCiMjIyBTdGVwIDE6IERvd25sb2EgZmlsZXMgZnJvbSBIUEMKVHJhbnNmZXIgZmlsZXMgZnJvbSBIUEMgdG8gR29vZ2xlIGRyaXZlLiBUaGUgZmlsZXMgdGhhdCBhcmUgYmVpbmcgdHJhbnNmZXJyZWQgaGVyZSBhcmUgdGhlIGdlbmUgY291bnQgZmllbHMgdGhhdCB3ZXJlIHByb2R1Y2VkIGJ5IFNUQVIuIAoKYGBge2Jhc2h9CiNJbnNlcnQgUmNsb25lIGNvbW1hbmQgSjIwIGhlcmUKYGBgCmBgYHtiYXNofQojSW5zZXJ0IHJjbG9uZSBjb21tYW5kIEsgaGVyZQpgYGAKCgpJbXBvcnQgdGhlIGNvdW50cyBmb3IgdGhlIEoyMCBtb3VzZSBsaW5lOgoKCmBgYHtyfQoKYGBgCgpgYGB7cn0KI09wZW4gdGhlIGZpbGUgY29udGFpbmluZyB0aGUgU1JBIElEcyBvZiB0aGUgSjIwIHNhbXBsZXMgYW5kIHJUZzQ1MTAgc2FtcGxlcwpKMjBfc2FtcGxlczwtcmVhZC5kZWxpbSgnL1VzZXJzL2RhbmllbGFxdWlqYW5vL0RvY3VtZW50cy9HaXRIdWIvVHJhbnNjcmlwdG9taWNzLUZpbmFsLVByb2plY3QtL0RhdGFfUmV0cmlldmFsL1NSUl9BY2NfTGlzdF9KMjBfNm1fMTJtLnR4dCcsaGVhZGVyPUZBTFNFKQoKYGBgCmBgYHtyfQpKMjBfc2FtcGxlcwpgYGAKYGBge3J9CkoyMF9zYW1wbGVzWzFdCmBgYAoKCmBgYHtyfQpyVGc0NTEwX3NhbXBsZXM8LQpgYGAKYGBge3J9CnJUZzQ1MTBfc2FtcGxlc1sxXQpgYGAKCmBgYHtyfQoKc2FtcGxlX25hbWVzIDwtY2JpbmQoSjIwX3NhbXBsZXNbMV0sKQpzYW1wbGVfY29uZGl0aW9uX21vdXNlX21vZGVsIDwtIGMocmVwKCdKMjAnLDQyKSxyZXAoJ3JUZzQ1MTAnLDMwKSkKc2FtcGxlX2NvbmRpdGlvbl9tb3VzZV9hZ2U8LWMocmVwKCc2Jyw0KSxyZXAoJzEyJyw0KSxyZXAoJzEyJyw0KSkKYGBgCgpgYGB7cn0KI0ZpbGUgcGF0aCBEYW5pZWxhCmZpbGVzIDwtIGZpbGUucGF0aCgnL1VzZXJzL2RhbmllbGFxdWlqYW5vL0RvY3VtZW50cy9HaXRIdWIvVHJhbnNjcmlwdG9taWNzLUZpbmFsLVByb2plY3Qvc291cmNlX2ZpbGVzJyxwYXN0ZShzYW1wbGVfbmFtZXMsIlJlYWRzUGVyR2VuZS5vdXQudGFiIixzZXA9IiIpKQpgYGAKCmBgYHtyfQojRmlsZSBwYXRoIFRhc25pbQoKCmBgYAoKYGBge3J9Cm5hbWVzKGZpbGVzKSA8LSBzYW1wbGVfbmFtZXMKYGBgCgoKQ3JlYXRlIGEgbWF0cml4IG9mIGdlbmUgY291bnRzIGZyb20gdGhlIGNvdW50IGRhdGEgb3V0cHV0dGVkIGJ5IFNUQVIuIFdlIG5lZWQgdG8gY2hlY2sgd2hldGhlciB0aGUgbGlicmFyeSBwcmVwYXJhdGlvbiB3YXMgc3RyYW5kZWQgb3IgdW5zdHJhbmRlZC4gSW4gb3JkZXIgdG8gZG8gdGhpcywgd2UgY2FuIGNvdW50IHRoZSBudW1iZXIgb2YgcmVhZHMgbWFwcGVkIHRvIGVhY2ggc3RyYW5kIGluIGEgc2FtcGxlIHdpdGggYXdrOgoKYGBge2Jhc2h9CltkcTIwMzNAbG9nLTIgU1JSODUxMjM2NV0kIGdyZXAgLXYgIk5fIiBTUlI4NTEyMzY1UmVhZHNQZXJHZW5lLm91dC50YWIgfCBhd2sgJ3t1bnN0Kz0kMjtmb3J3Kz0kMztyZXYrPSQ0fUVORHtwcmludCB1bnN0LGZvcncscmV2fScKODc3OTg1MyA4ODcwOTE2IDMxNDY4MApgYGAKCmBgYHtyfQpmb3IgKGZpbGUgaW4gZmlsZXMpIHsKICByZWFkLnRhYmxlKGZpbGUsc2VwPSJcdCIsIGhlYWRlcj1UUlVFKQogIAp9CmBgYAoKYGBge3J9CnByaW50KGZpbGVzKQpgYGAKCioqKioqIGNoZWNrIGRlc2lnbiBmb3IgZGVzZXEgd2l0aCB0d28gY29uZGl0aW9ucyAqKioqKgpgYGB7cn0KCnNhbXBsZXMgPC0gZGF0YS5mcmFtZShzYW1wbGVfbmFtZXM9c2FtcGxlX25hbWVzLGNvbmRpdGlvbl9hPXNhbXBsZV9jb25kaXRpb25fbW91c2VfbW9kZWwsIGNvbmRpdGlvbl9iPXNhbXBsZV9jb25kaXRpb25fbW91c2VfYWdlKQpyb3cubmFtZXMoc2FtcGxlcykgPC0gc2FtcGxlX25hbWVzCmBgYAoK</div>
 
 
 

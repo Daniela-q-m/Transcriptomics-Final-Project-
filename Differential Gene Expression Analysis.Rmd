@@ -6,6 +6,17 @@ output: html_notebook
 The purpose of this notebook is to conduct a differential gene expression analysis with the data obtained from:
 Castanho I, Murray TK, Hannon E, Jeffries A et al. Transcriptional Signatures of Tau and Amyloid Neuropathology. Cell Rep 2020 Feb 11;30(6):2040-2054.e5. PMID: 32049030
 
+```{r}
+
+library(dplyr)
+
+library(pheatmap)
+
+library(ggplot2)
+```
+
+
+
 ### Step 1: Downloa files from HPC
 Transfer files from HPC to Google drive. The files that are being transferred here are the gene count fiels that were produced by STAR. 
 
@@ -19,38 +30,76 @@ Transfer files from HPC to Google drive. The files that are being transferred he
 
 Import the counts for the J20 mouse line:
 
-```{bash}
-#Import file containing the SRA IDs from HPC to Google Drive
 
-[dq2033@log-2 J20_samples]$ rclone copy /scratch/dq2033/transcriptomics/J20_samples/SRR_Acc_List_J20_6m_12m.txt  mygoogledrive:hpc_uploads
+```{r}
 
 ```
 
 ```{r}
 #Open the file containing the SRA IDs of the J20 samples and rTg4510 samples
-J20_samples<-
+J20_samples<-read.delim('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Data_Retrieval/SRR_Acc_List_J20_6m_12m.txt',header=FALSE)
 
 ```
+```{r}
+J20_samples
+```
+```{r}
+J20_samples[1]
+```
+
+
 ```{r}
 rTg4510_samples<-
 ```
-
 ```{r}
-#
-sample_names <- c('PDAC253','PDAC282','PDAC286','PDAC316','PDAC266','PDAC273','PDAC306','PDAC318')
-sample_condition_mouse_model <- c(rep('highSucrose',4),rep('lowSucrose',4))
-sample_condition_mouse_age<-c(rep('highSucrose',4),rep('lowSucrose',4))
+rTg4510_samples[1]
 ```
 
 ```{r}
-files <- file.path('/Users/danielaquijano/Documents/NYU Masters/SPRING 2022/NGS Class/Week10',paste(sample_names,"ReadsPerGene.out.tab",sep=""))
+
+sample_names <-cbind(J20_samples[1],)
+sample_condition_mouse_model <- c(rep('J20',42),rep('rTg4510',30))
+sample_condition_mouse_age<-c(rep('6',4),rep('12',4),rep('12',4))
 ```
+
+```{r}
+#File path Daniela
+files <- file.path('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project/source_files',paste(sample_names,"ReadsPerGene.out.tab",sep=""))
+```
+
+```{r}
+#File path Tasnim
+
+
+```
+
 ```{r}
 names(files) <- sample_names
 ```
-```{r}
-#Check that filepaths created in files actually exist by printing files and making sure file.exists()=T
- file.exists('/Users/danielaquijano/Documents/NYU Masters/SPRING 2022/NGS Class/Week10/PDAC253.transcripts_quant/quant.sf')
+
+
+Create a matrix of gene counts from the count data outputted by STAR. We need to check whether the library preparation was stranded or unstranded. In order to do this, we can count the number of reads mapped to each strand in a sample with awk:
+
+```{bash}
+[dq2033@log-2 SRR8512365]$ grep -v "N_" SRR8512365ReadsPerGene.out.tab | awk '{unst+=$2;forw+=$3;rev+=$4}END{print unst,forw,rev}'
+8779853 8870916 314680
 ```
 
+```{r}
+for (file in files) {
+  read.table(file,sep="\t", header=TRUE)
+  
+}
+```
+
+```{r}
+print(files)
+```
+
+***** check design for deseq with two conditions *****
+```{r}
+
+samples <- data.frame(sample_names=sample_names,condition_a=sample_condition_mouse_model, condition_b=sample_condition_mouse_age)
+row.names(samples) <- sample_names
+```
 
