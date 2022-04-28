@@ -1,0 +1,56 @@
+---
+title: "DESEQ2 Analysis, Tau/Amyloid Mouse Lines"
+output: html_notebook
+---
+
+The purpose of this notebook is to conduct a differential gene expression analysis with the data obtained from:
+Castanho I, Murray TK, Hannon E, Jeffries A et al. Transcriptional Signatures of Tau and Amyloid Neuropathology. Cell Rep 2020 Feb 11;30(6):2040-2054.e5. PMID: 32049030
+
+### Step 1: Downloa files from HPC
+Transfer files from HPC to Google drive. The files that are being transferred here are the gene count fiels that were produced by STAR. 
+
+```{bash}
+#Insert Rclone command J20 here
+```
+```{bash}
+#Insert rclone command K here
+```
+
+
+Import the counts for the J20 mouse line:
+
+```{bash}
+#Import file containing the SRA IDs from HPC to Google Drive
+
+[dq2033@log-2 J20_samples]$ rclone copy /scratch/dq2033/transcriptomics/J20_samples/SRR_Acc_List_J20_6m_12m.txt  mygoogledrive:hpc_uploads
+
+```
+
+```{r}
+#Open the file containing the SRA IDs of the J20 samples and rTg4510 samples
+J20_samples<-
+
+```
+```{r}
+rTg4510_samples<-
+```
+
+```{r}
+#
+sample_names <- c('PDAC253','PDAC282','PDAC286','PDAC316','PDAC266','PDAC273','PDAC306','PDAC318')
+sample_condition_mouse_model <- c(rep('highSucrose',4),rep('lowSucrose',4))
+sample_condition_mouse_age<-c(rep('highSucrose',4),rep('lowSucrose',4))
+```
+
+```{r}
+files <- file.path('/Users/danielaquijano/Documents/NYU Masters/SPRING 2022/NGS Class/Week10',paste(sample_names,"ReadsPerGene.out.tab",sep=""))
+```
+```{r}
+names(files) <- sample_names
+```
+```{r}
+#Check that filepaths created in files actually exist by printing files and making sure file.exists()=T
+ file.exists('/Users/danielaquijano/Documents/NYU Masters/SPRING 2022/NGS Class/Week10/PDAC253.transcripts_quant/quant.sf')
+```
+
+
