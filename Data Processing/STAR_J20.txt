@@ -3,20 +3,21 @@
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=8:00:00
-#SBATCH --mem=16GB
-#SBATCH --job-name=STAR_J20
+#SBATCH --time=20:00:00
+#SBATCH --mem=30GB
+#SBATCH --job-name=star_alignment
 #SBATCH --mail-type=FAIL,END
-#SBATCH --mail-user=<dq2033@nyu.edu>
+#SBATCH --mail-user=dq2033@nyu.edu
 #SBATCH --array=1-42
 
 module purge
 
 # Path to 3-column (tab-delimited) table with sample name, fastq 1 file name, and fastq 2 file name
 
+
 table=/scratch/dq2033/transcriptomics/J20_samples/J20_fastq_trimmed_table.txt
 
-#Create a separate directory for each sample with mkdir 
+
 # Define sample, fq1 and fq2 variables for current array index
 # note: SLURM_ARRAY_TASK_ID environmental variable will contain a single value corresponding to the current array index
 
@@ -25,29 +26,27 @@ sample="$(printf "%s" "${line}" | cut -f1)"
 fq1="$(printf "%s" "${line}" | cut -f2)"
 fq2="$(printf "%s" "${line}" | cut -f3)"
 
+fqdir=/scratch/dq2033/transcriptomics/J20_samples/fastq_files 
 
 # Print to standard out the array index and the sample name
 
 echo Processing array index: $SLURM_ARRAY_TASK_ID sample: $sample
 
+# cd to sample directory 
+
+mkdir $sample
+cd $sample
 
 # Load STAR, run star commands
 
+
 module load star/intel/2.7.6a
 
-STAR --genomeDir /scratch/work/courses/BI7653/hw8.2022/STAR.genome \
---runMode alignReads \
--–runThreadN ${SLURM_CPUS_PER_TASK} \
---outSAMtype BAM SortedByCoordinate \
---outFileNamePrefix $sample \
---readFilesIn  /scratch/dq2033/transcriptomics/J20_samples/${fq1} /scratch/dq2033/transcriptomics/J20_samples/${fq2} \
---outTmpDir ${SLURM_TMPDIR}/${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID} \
--–limitBAMsortRAM 20000000000 \
-
-
-module purge
-
-module load samtools/intel/1.14
-
-samtools index ${sample}Aligned.sortedByCoord.out.bam ${sample}Aligned.sortedByCoord.out.bai
-
+STAR --runMode alignReads\
+     --runThreadN $SLURM_CPUS_PER_TASK\
+     --genomeDir /scratch/dq2033/transcriptomics/J20_samples/genome\
+     --readFilesIn /scratch/dq2033/transcriptomics/J20_samples/fastq_files/${fq1},/scratch/dq2033/transcriptomics/J20_samples/fastq_files/${fq2}\
+     --outSAMtype BAM SortedByCoordinate\
+     --outFileNamePrefix $sample\
+     --limitBAMsortRAM 20000000000\
+     --quantMode GeneCounts
