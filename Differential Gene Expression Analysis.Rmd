@@ -17,18 +17,11 @@ library(ggplot2)
 
 
 
-### Step 1: Downloa files from HPC
+### Step 1: Downloa files from HPC,read in files into R
+
 Transfer files from HPC to Google drive. The files that are being transferred here are the gene count fiels that were produced by STAR. 
 
-```{bash}
-#Insert Rclone command J20 here
-```
-```{bash}
-#Insert rclone command K here
-```
-
-
-Import the counts for the J20 mouse line:
+Import the counts for the J20 and rTg4510 mouse line:
 
 
 ```{r}
@@ -40,9 +33,7 @@ Import the counts for the J20 mouse line:
 J20_samples<-read.delim('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Data_Retrieval/SRR_Acc_List_J20_6m_12m.txt',header=FALSE)
 
 ```
-```{r}
-J20_samples
-```
+
 ```{r}
 J20_samples[1]
 ```
@@ -51,6 +42,7 @@ J20_samples[1]
 ```{r}
 rTg4510_samples<-
 ```
+
 ```{r}
 rTg4510_samples[1]
 ```
@@ -64,13 +56,17 @@ sample_condition_mouse_age<-c(rep('6',4),rep('12',4),rep('12',4))
 
 ```{r}
 #File path Daniela
-files <- file.path('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project/source_files',paste(sample_names,"ReadsPerGene.out.tab",sep=""))
+files_D <- file.path('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project/source_files/J_20_samples',paste(sample_names,"ReadsPerGene.out.tab",sep=""))
 ```
 
 ```{r}
 #File path Tasnim
+files_T<-
 
+```
 
+```{r}
+files<-
 ```
 
 ```{r}
@@ -84,10 +80,23 @@ Create a matrix of gene counts from the count data outputted by STAR. We need to
 [dq2033@log-2 SRR8512365]$ grep -v "N_" SRR8512365ReadsPerGene.out.tab | awk '{unst+=$2;forw+=$3;rev+=$4}END{print unst,forw,rev}'
 8779853 8870916 314680
 ```
+8870916 Reads 1 (forward) were mapped to known genes and  314680 Reads 2 (reverse) were mapped to known genes. 
+
+
+
 
 ```{r}
+install.packages("data.table") # Install data.table
+library("data.table")    
+```
+
+Loop through the directory of files, open them, add the sample data to the count data matrix
+Only Import Selected Variables Using fread() Function of data.table Package. Each sample 
+```{r}
+i=1
 for (file in files) {
-  read.table(file,sep="\t", header=TRUE)
+  count_data[sample_names[i]]<-read.table(files_D,sep="\t", select = c("x1", "x2", "x4"))
+  i=i+1
   
 }
 ```
