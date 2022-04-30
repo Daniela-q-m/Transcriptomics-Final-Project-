@@ -13,9 +13,9 @@ library(dplyr)
 
 ### Download files from HPC, read in files into R
 
-Transfer files from HPC to Google drive. The files that are being transferred here are the gene count fiels that were produced by STAR. 
+Transfer files from HPC to Google drive. The files that are being transferred here are the gene count files that were produced by STAR. 
 
-Import the counts for the J20 and rTg4510 mouse line:
+Import the counts for the J20 mouse line:
 
 ```{r}
 #Open the file containing the SRA IDs of the J20 samples and rTg4510 samples
@@ -26,21 +26,13 @@ J20_samples<-read.delim('/Users/danielaquijano/Documents/GitHub/Transcriptomics-
 J20_samples[1]
 ```
 
-```{r}
-rTg4510_samples<-
-```
 
 ```{r}
-rTg4510_samples[1]
-```
-
-```{r}
-
 sample_names <-c(J20_samples[[1]]) #Select columns with [[]] to create vector from sample names column
-
 ```
 
 ```{r}
+#Loop over the folder containing the count data for each sample. Use the sample name from the SRR accession list to substiute sample name in the file path. Later we will use these file paths in order to build a count matrix. 
 for (sample in sample_names){
   
 files_D<- c(files_D,paste('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/STAR_Counts/',sample,"ReadsPerGene.out.tab",sep=''))
@@ -48,11 +40,8 @@ files_D<- c(files_D,paste('/Users/danielaquijano/Documents/GitHub/Transcriptomic
 }
 ```
 
-```{r}
-files<-rbind(files_D,files_T)
-```
 
-Create a matrix of gene counts from the count data outputted by STAR. We need to check whether the library preparation was stranded or unstranded. In order to do this, we can count the number of reads mapped to each strand in a sample with awk:
+Create a matrix of gene counts from the count data outputted by STAR. We need to check whether the library preparation was stranded or unstranded. In order to do this, we can count the number of reads mapped to each strand in a given sample with awk:
 
 ```{bash}
 [dq2033@log-2 SRR8512365]$ grep -v "N_" SRR8512365ReadsPerGene.out.tab | awk '{unst+=$2;forw+=$3;rev+=$4}END{print unst,forw,rev}'
@@ -92,6 +81,7 @@ file.exists('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Projec
 ```
 
 ```{r}
+#Loop over the file list in order to extract the counts from each file. sspecified above the library is stranded so we will use the V3 column which contains the forward read counts. We will name each column using the SRR id from each sample stored in sample_names and a counter will be used to loop through each name in this list. The counter, i, is incremented after each iteration of the loop.
 i=1
 count_data<-data.frame(gene_names= fread('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/STAR_Counts/SRR8512365ReadsPerGene.out.tab',sep="\t",select = c('V1')))
 
@@ -101,13 +91,17 @@ for (file in files_D) {
 }
 ```
 
+
+
+count_data contains the gene counts for J20 mice.
+
 ```{r}
 count_data
 ```
 
 ```{r}
 #Write dataframe containing J20 samples to a csv. Save in Count_Tables folder in GitHub repositroy
-write.csv(Your DataFrame,"Path to export the DataFrame\\File Name.csv", row.names = FALSE)
+write.csv(count_data,"/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/count_data.csv", row.names = FALSE)
 ```
 
 
