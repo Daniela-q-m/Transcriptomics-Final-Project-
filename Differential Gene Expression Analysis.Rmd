@@ -16,7 +16,6 @@ library(ggplot2)
 ```
 
 
-
 ### Step 1: Downloa files from HPC,read in files into R
 
 Transfer files from HPC to Google drive. The files that are being transferred here are the gene count fiels that were produced by STAR. 
@@ -24,20 +23,15 @@ Transfer files from HPC to Google drive. The files that are being transferred he
 Import the counts for the J20 and rTg4510 mouse line:
 
 
-```{r}
-
-```
 
 ```{r}
 #Open the file containing the SRA IDs of the J20 samples and rTg4510 samples
 J20_samples<-read.delim('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Data_Retrieval/SRR_Acc_List_J20_6m_12m.txt',header=FALSE)
-
 ```
 
 ```{r}
 J20_samples[1]
 ```
-
 
 ```{r}
 rTg4510_samples<-
@@ -49,24 +43,28 @@ rTg4510_samples[1]
 
 ```{r}
 
-sample_names <-cbind(J20_samples[1],)
+sample_names <-J20_samples[1]
 sample_condition_mouse_model <- c(rep('J20',42),rep('rTg4510',30))
 sample_condition_mouse_age<-c(rep('6',4),rep('12',4),rep('12',4))
 ```
 
 ```{r}
 #File path Daniela
-files_D <- file.path('/Users/danielaquijano/Documents/Final_Project_Files',paste(sample_names,"ReadsPerGene.out.tab",sep=""))
+files_D <- file.path('/Users/danielaquijano/Documents/Final_Project_Files',paste(sample_names,"ReadsPerGene.out.tab"))
 ```
 
 ```{r}
 #File path Tasnim
-files_T<-
+files_T<-c()
 
 ```
 
 ```{r}
 files<-rbind(files_D,files_T)
+```
+
+```{r}
+print(files_D)
 ```
 
 ```{r}
@@ -90,23 +88,28 @@ Every sample has its own gene count data in the form of a ReadsPerGene.out.tab f
 ```{r}
 read.table('/Users/danielaquijano/Documents/Final_Project_Files/SRR8512351ReadsPerGene.out.tab',sep="\t")
 ```
-As established with the results of the awk command above, the output has to be chosen based on the strandedness of the data. This can be accomplished using the data.table library in order to select the column containing the gene names and mapping information (V1) and also
+As established with the results of the awk command above, the output has to be chosen based on the strandedness of the data. This can be accomplished using the data.table library in order to select the column containing the gene names and mapping information (V1) and also the column containing the counts for forward reads (V3). An example of reading one of the count files is seen below. 
 
- select = c("x1", "x2", "x4")
+
+```{r}
+fread('/Users/danielaquijano/Documents/Final_Project_Files/SRR8512351ReadsPerGene.out.tab',sep="\t", select = c("V1", "V3"))
+```
 
 ```{r}
 install.packages("data.table") # Install data.table
-library("data.table")    
+```
+```{r}
+library("data.table") 
 ```
 
 Loop through the directory of files, open them, add the sample data to the count data matrix
-Only Import Selected Variables Using fread() Function of data.table Package. Each sample 
+Only Import Selected Variables Using fread() Function of data.table Package.
+
 ```{r}
 i=1
 for (file in files) {
-  count_data[sample_names[i]]<-read.table(files_D,sep="\t", select = c("x1", "x2", "x4"))
+  count_data[sample_names[i]]<-fread(file,sep="\t",select = c("V1", "V3"))
   i=i+1
-  
 }
 ```
 
