@@ -37,7 +37,7 @@ Import matrix containing the counts for all samples. These counts represent the 
 
 ```{r}
 
-counts_matrix<-read.table("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/count_data.csv",sep=',',header=TRUE)
+counts_matrix<-read.table("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
 ```
 ```{r}
 counts_matrix
@@ -46,19 +46,14 @@ counts_matrix
 rownames(counts_matrix)<-counts_matrix$V1
 counts_matrix$V1<-NULL
 ```
+
 ```{r}
 counts_matrix
 ```
 
-```{r}
-row_to_delete <- c('N_unmapped','N_multimapping','N_noFeature','N_ambiguous')
-
-counts_matrix[!(row.names(counts_matrix) %in% row_to_delete),]  
-```
-
 
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData = cts,
+dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
                               colData = design_matrix,
                               design = ~ Genotype + Age+ Model)
 dds
