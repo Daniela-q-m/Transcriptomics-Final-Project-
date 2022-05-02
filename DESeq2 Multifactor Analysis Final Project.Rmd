@@ -1,0 +1,41 @@
+---
+title: "DESeq2 Multifactor Analysis Final Project"
+output: html_notebook
+---
+
+# Goals for DGE Analysis
+
+The goals for this analysis are to investigate how the gene expression changes based on the mouse model, genotype within the mouse model, and age.
+Questions to answer:
+-What genes are differentially expressed due to Mouse Model Alone?
+-How does aging affect gene expression within each mouse model?
+-How does the genotype within each mouse model affect gene expression at different time points?
+
+### Import experimental design matrix.
+
+```{r}
+library(DESeq2)
+library(pheatmap)
+```
+
+
+```{r}
+design_matrix<-read.table('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design.csv',sep=',',header=TRUE)
+```
+
+```{r}
+design_matrix
+```
+
+Import matrix containing the counts for all samples. These counts represent the forward strand counts since this was a stranded library. 
+
+```{r}
+
+counts_matrix<-read.table('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/all_counts.csv',sep=',',header=TRUE)
+```
+
+
+```{r}
+
+```
+
