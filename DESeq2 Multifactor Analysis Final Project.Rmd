@@ -48,7 +48,16 @@ counts_matrix$V1<-NULL
 ```
 
 ```{r}
+counts_matrix<-counts_matrix[,order(colnames(counts_matrix))]
+```
+```{r}
 counts_matrix
+```
+```{r}
+design_matrix<-design_matrix[order(rownames(design_matrix)),]
+```
+```{r}
+design_matrix
 ```
 
 
@@ -57,5 +66,22 @@ dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
                               colData = design_matrix,
                               design = ~ Genotype + Age+ Model)
 dds
+```
+Remove genes with counts less than 10
+
+```{r}
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
+
+Run DESeq
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+rawcounts.matrix <- counts(dds,normalized=F)
+normalizedcounts.matrix <- counts(dds,normalized=T)
+class(rawcounts.matrix)
 ```
 
