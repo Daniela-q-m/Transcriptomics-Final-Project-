@@ -33,21 +33,28 @@ design_matrix$Sample<-NULL
 ```{r}
 design_matrix
 ```
-
 Import matrix containing the counts for all samples. These counts represent the forward strand counts since this was a stranded library. 
 
 ```{r}
-
 counts_matrix<-read.table("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
 ```
 ```{r}
 counts_matrix
 ```
+Because the numbers after the dot in the ensembl IDs represent versions of genes in certain annotations, we can remove these to more easily conduct our differential gene expression analysis. 
+```{r}
+counts_matrix$V1<-gsub("\\..*","",counts_matrix$V1)
+```
+```{r}
+counts_matrix
+```
+
 ```{r}
 rownames(counts_matrix)<-counts_matrix$V1
 counts_matrix$V1<-NULL
 ```
 
+We need to sort the counts_matrix as well as our experimental design matrix in order to run DESEQ2    
 ```{r}
 counts_matrix<-counts_matrix[,order(colnames(counts_matrix))]
 ```
@@ -83,7 +90,6 @@ dds <- DESeq(dds)
 ```{r}
 rawcounts.matrix <- counts(dds,normalized=F)
 normalizedcounts.matrix <- counts(dds,normalized=T)
-class(rawcounts.matrix)
 ```
 
 ```{r}
@@ -110,10 +116,7 @@ Trying to rename labels....
 dend <- dists %>%  hclust %>% as.dendrogram
 dend %>% set("labels", c(rep('rtg4510',26),rep('J20',42),rep('rtg4510',4))) %>% set("labels_cex", 0.5) %>% plot
 ```
-
-```{r}
-head(vst_dds)
-```
+`
 
 *** Add title, make graph cute (size bigger) Capitalize group
 ```{r}
@@ -129,6 +132,25 @@ res_1 <- results(dds, contrast = c("Model","rtg4510","J20"))
 res1_ordered <- res_1[order(res_1$pvalue),] 
 head(res1_ordered,200)
 ```
+Filter the res1_ordered byp value to obtain only those genes with p value less than 0.05
+```{r}
+#Filter Differentially Expressed Genes by p value 0.05
+res1_ordered_filtered <- res1_ordered[res1_ordered$pvalue<0.05,]
+```
+See how many genes have p value equals to zero
+```{r}
+res1_ordered_filtered_2 <- res1_ordered[res1_ordered$pvalue==0,]
+```
+
+Genes with pvalue==0
+```{r}
+res1_ordered_filtered_2
+```
+Genes with pvalue<0.05
+```{r}
+res1_ordered_filtered
+```
+
 
 ### -How does aging affect gene expression within each mouse model?
 ```{r}
@@ -152,6 +174,9 @@ BiocManager::install("org.Mm.eg.db")
 install.packages("devtools")
 devtools::install_github("stephenturner/annotables")
 ```
+```{r}
+install.packages("ggnewscale")
+```
 
 ```{r}
 library(biomaRt) #For conversion of transcript IDs to gene ID
@@ -163,42 +188,87 @@ library(clusterProfiler)
 library(AnnotationHub) 
 library(ensembldb)
 library(tidyverse)
+library(ggnewscale)
 ```
 
 
 ```{r}
 grcm38
 ```
+```{r}
+res1_ordered
+```
+
+```{r}
+idx <- grcm38$ensgene %in% rownames(res1_ordered)
+```
+
+```{r}
+ids <- grcm38[idx, ]
+```
+
+```{r}
+non_duplicates <- which(duplicated(ids$ensgene) == FALSE)
+```
+
+```{r}
+ids <- ids[non_duplicates, ]
+```
+
+```{r}
+res_ids <- inner_join(res1_ordered, ids, by=c("ensgene"="symbol")) 
+```
+```{r}
+ids
+```
 
 Because we have transcript IDs, we want ensembl ids in order to be able to conduct GO Term enrichment we need ensembl ID
 
-```{r}
-listEnsembl()
-```
 
-```{r}
-ensembl <- useMart("ensembl", dataset="mmusculus_gene_ensembl")
-annot<-getBM(c("ensembl_gene_id","ensembl_transcript_id", "mgi_symbol", "chromosome_name", "strand", "start_position", "end_position","gene_biotype"), mart=ensembl)
-#searchDatasets(mart = ensembl, pattern = "mouse")
-```
+In order to conduct the hypergeometric test on each set of differentially expressed genes we need to have two sets of genes: a background set, and a significant differentially expressed gene set. The background set will be comprised of all differentially expressed genes and the genes of interest will be those with significant p values (0.05).
 
-```{r}
-annot
-```
+We are using 'ALL' for ontology because we want to see all of the differentially expressed genes accross all categories.
+We are using the bonferroni correction.
 
 ```{r}
 ## Use mouse genome 
-ego <- enrichGO(gene = , 
-                universe = ,
+ego <- enrichGO(gene = rownames(res1_ordered_filtered), 
+                universe =ids$ensgene ,
                 keyType = "ENSEMBL",
                 OrgDb = org.Mm.eg.db, 
                 ont = "ALL", 
                 pAdjustMethod = "BH", 
                 qvalueCutoff = 0.05, 
-                readable = TRUE)
+                readable = TRUE,
+                pool=TRUE)
                 
 ## Output results from GO analysis to a table
 enriched_genes_res1 <- data.frame(ego)
 ```
+```{r}
+enriched_genes_res1
+```
+
+```{r fig.width=15,fig.height=20}
+dotplot(ego, showCategory=50)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))
+```
+```{r}
+
+OE_foldchanges <- res1_ordered_filtered$log2FoldChange
+OE_foldchanges<-head(OE_foldchanges,150)
+
+names(OE_foldchanges) <- rownames(head(res1_ordered_filtered,150))
+
+cnetplot(ego, 
+         categorySize="pvalue", 
+         showCategory = 5, 
+         foldChange=OE_foldchanges, 
+         vertex.label.font=2)
+```
+
+
+
+
+
 
 
