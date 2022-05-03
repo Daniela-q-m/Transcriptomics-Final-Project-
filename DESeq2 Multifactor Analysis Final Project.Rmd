@@ -16,6 +16,8 @@ Questions to answer:
 ```{r}
 library(DESeq2)
 library(pheatmap)
+library(dplyr)
+library(dendextend)
 ```
 
 
@@ -23,10 +25,9 @@ library(pheatmap)
 design_matrix<-read.table('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design.csv',sep=',',header=TRUE)
 ```
 
+
 ```{r}
 rownames(design_matrix)<-design_matrix$Sample
-```
-```{r}
 design_matrix$Sample<-NULL
 ```
 ```{r}
@@ -84,4 +85,120 @@ rawcounts.matrix <- counts(dds,normalized=F)
 normalizedcounts.matrix <- counts(dds,normalized=T)
 class(rawcounts.matrix)
 ```
+
+```{r}
+vst_dds <- vst(dds)
+dists <- dist(t(assay(vst_dds)))
+
+```
+```{r}
+dists
+```
+
+TO DO: *****Label samples
+```{r}
+
+dendogram<-plot(hclust(dists),cex=0.6)
+
+```
+```{r}
+labels(dendogram)
+```
+
+Trying to rename labels....
+```{r}
+dend <- dists %>%  hclust %>% as.dendrogram
+dend %>% set("labels", c(rep('rtg4510',26),rep('J20',42),rep('rtg4510',4))) %>% set("labels_cex", 0.5) %>% plot
+```
+
+```{r}
+head(vst_dds)
+```
+
+*** Add title, make graph cute (size bigger) Capitalize group
+```{r}
+plotPCA(vst_dds,intgroup=c("Model","Genotype","Age"))
+```
+# Obtain results based on different contrasts
+
+### What genes are differentially expressed due to Mouse Model Alone?
+```{r}
+res_1 <- results(dds, contrast = c("Model","rtg4510","J20"))
+```
+```{r}
+res1_ordered <- res_1[order(res_1$pvalue),] 
+head(res1_ordered,200)
+```
+
+### -How does aging affect gene expression within each mouse model?
+```{r}
+res_2 <- results(dds, contrast = c("Age","2","8"))
+```
+```{r}
+?results
+```
+
+-How does the genotype within each mouse model affect gene expression at different time points?
+
+
+#GO-Term Enrichment
+
+Install Mouse annotation library:
+```{r}
+BiocManager::install("org.Mm.eg.db")
+```
+
+```{r}
+install.packages("devtools")
+devtools::install_github("stephenturner/annotables")
+```
+
+```{r}
+library(biomaRt) #For conversion of transcript IDs to gene ID
+library(annotables) #to retrieve grcm38 annotation for mouse genome
+library(org.Mm.eg.db) #Mouse genome annotation
+library(DOSE)
+library(pathview)
+library(clusterProfiler)
+library(AnnotationHub) 
+library(ensembldb)
+library(tidyverse)
+```
+
+
+```{r}
+grcm38
+```
+
+Because we have transcript IDs, we want ensembl ids in order to be able to conduct GO Term enrichment we need ensembl ID
+
+```{r}
+listEnsembl()
+```
+
+```{r}
+ensembl <- useMart("ensembl", dataset="mmusculus_gene_ensembl")
+annot<-getBM(c("ensembl_gene_id","ensembl_transcript_id", "mgi_symbol", "chromosome_name", "strand", "start_position", "end_position","gene_biotype"), mart=ensembl)
+#searchDatasets(mart = ensembl, pattern = "mouse")
+```
+
+```{r}
+annot
+```
+
+```{r}
+## Use mouse genome 
+ego <- enrichGO(gene = , 
+                universe = ,
+                keyType = "ENSEMBL",
+                OrgDb = org.Mm.eg.db, 
+                ont = "ALL", 
+                pAdjustMethod = "BH", 
+                qvalueCutoff = 0.05, 
+                readable = TRUE)
+                
+## Output results from GO analysis to a table
+enriched_genes_res1 <- data.frame(ego)
+```
+
 
