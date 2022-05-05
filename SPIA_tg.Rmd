@@ -139,43 +139,122 @@ nrow(res1_ordered)
 rownames(res1_ordered)
 entrezID= grcm38[grcm38$ensgene %in% rownames(res1_ordered), ]
 
-res1_ordered_tb <- res1_ordered %>%
-  data.frame() %>%
-  rownames_to_column(var="ensgene") %>% 
-  as_tibble()
+head(entrezID)
 
-res_entrez= as.data.frame(inner_join(res1_ordered_tb, entrezID))
+entrez_ID_vector = c(entrezID[[2]])
 
+head(entrez_ID_vector)
+
+res2= data.frame(log2foldchange= subset(res1_ordered$log2FoldChange, grcm38$ensgene %in% rownames(res1_ordered)))
+padj = subset(res1_ordered$padj, grcm38$ensgene %in% rownames(res1_ordered))
+res2 = cbind(padj, res2)
+res2 = cbind(entrez_ID_vector, res2)
+
+res2 = na.omit(res2)
+
+head(res2)
+#res2 = cbind(res1_ordered$log2FoldChange, res2)
+
+#res1_ordered_tb <- res1_ordered %>%
+  #data.frame() %>%
+  #rownames_to_column(var="ensgene") %>% 
+  #as_tibble()
+
+#res_entrez= as.data.frame(inner_join(res1_ordered_tb, entrezID))
+
+
+#res_entrez= inner_join(res1_ordered_tb, entrezID, by= c("gene" = ))
+```
+```{r}
+## Create background dataset for hypergeometric testing using all genes tested for significance in the results                 
+allOE_genes <- as.character(res_entrez$ensgene)
+
+## Extract significant results
+sigOE <- filter(res_entrez, padj < 0.05)
+
+sigOE_genes <- as.character(sigOE$ensgene)
+```
+
+```{r}
+## Run GO enrichment analysis 
+ego <- enrichGO(gene = sigOE_genes, 
+                universe = allOE_genes,
+                keyType = "ENSEMBL",
+                OrgDb = org.Hs.eg.db, 
+                ont = "BP", 
+                pAdjustMethod = "BH", 
+                qvalueCutoff = 0.05, 
+                readable = TRUE)
+                
+## Output results from GO analysis to a table
+cluster_summary <- data.frame(ego)
+```
+
+```{r}
+
+```
+
+```{r}
+```
+
+
+```{r}
 ```
 
 
 ```{r}
 # Set-up
 
-BiocManager::install("SPIA")
+#BiocManager::install("SPIA")
 library(SPIA)
 
 ## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
 
-background_entrez <- res_entrez$entrez
+background_entrez <- res2$entrez_ID_vector
 
-sig_res_entrez <- res_entrez[which(res_entrez$padj < 0.05), ]
+sig_res_entrez <- res2[which(res2$padj < 0.05), ]
 
-sig_entrez <- sig_res_entrez$log2FoldChange
+sig_entrez <- sig_res_entrez$log2foldchange
+
+head(sig_res_entrez)
+
+
 
 names(sig_entrez) <- sig_res_entrez$entrez
 
 head(sig_entrez)
+
+dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
+sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
 ```
 
 
 ```{r}
 
 # currently stuck at this error message
+#de= as.vector(sig_entrez)
+
+#de = sort(de, decreasing = FALSE)
+
 
 spia_result <- spia(de=sig_entrez, all=background_entrez, organism="mmu")
 
-head(spia_result, n=20)
+head(spia_result)
 
 ```
+```{r}
+plotP(spia_result, threshold=0.05) 
+```
+```{r}
+
+write.csv(spia_result, file = "spia_result")
+```
+
+
+```{r}
+subset(spia_result, ID == "04727")
+
+
+```
+
 
