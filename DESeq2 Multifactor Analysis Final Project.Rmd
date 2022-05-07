@@ -228,7 +228,7 @@ Because we have transcript IDs, we want ensembl ids in order to be able to condu
 In order to conduct the hypergeometric test on each set of differentially expressed genes we need to have two sets of genes: a background set, and a significant differentially expressed gene set. The background set will be comprised of all differentially expressed genes and the genes of interest will be those with significant p values (0.05).
 
 We are using 'ALL' for ontology because we want to see all of the differentially expressed genes accross all categories.
-We are using the bonferroni correction.
+
 
 ```{r}
 ## Use mouse genome 

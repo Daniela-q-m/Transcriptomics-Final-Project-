@@ -1,0 +1,316 @@
+---
+title: "SPIA_J20_cleaned"
+output: html_notebook
+---
+
+
+
+```{r}
+library(DESeq2)
+library(pheatmap)
+library(dplyr)
+library(dendextend)
+library(ggplot2)
+```
+
+```{r}
+design_matrix<-read.table('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design.csv',sep=',',header=TRUE)
+
+head(design_matrix)
+```
+
+
+```{r}
+rownames(design_matrix)<-design_matrix$Sample
+design_matrix$Sample<-NULL
+
+design_matrix
+```
+
+```{r}
+counts_matrix<-read.table("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
+```
+```{r}
+counts_matrix$V1<-gsub("\\..*","",counts_matrix$V1)
+```
+
+
+```{r}
+rownames(counts_matrix)<-counts_matrix$V1
+counts_matrix$V1<-NULL
+```
+
+```{r}
+counts_matrix
+```
+
+```{r}
+counts_matrix<-counts_matrix[,order(colnames(counts_matrix))]
+```
+```{r}
+design_matrix<-design_matrix[order(rownames(design_matrix)),]
+```
+
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
+                              colData = design_matrix,
+                              design = ~ Genotype )
+dds
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
+
+Run DESeq
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+rawcounts.matrix <- counts(dds,normalized=F)
+normalizedcounts.matrix <- counts(dds,normalized=T)
+```
+
+
+```{r}
+vst_dds <- vst(dds)
+dists <- dist(t(assay(vst_dds)))
+
+```
+
+```{r}
+PCA_Genotype<-plotPCA(vst_dds,intgroup=c("Genotype"))+labs(title = "PCA of mice of different genotypes", color = "Group")+coord_fixed(ratio=3)
+PCA_Genotype
+```
+```{r}
+res_1 <- results(dds, contrast = c("Genotype","J20","WT_J"))
+```
+
+```{r}
+res1_ordered <- res_1[order(res_1$pvalue),] 
+head(res1_ordered)
+```
+```{r}
+library(biomaRt) #For conversion of transcript IDs to gene ID
+library(httr)
+library(annotables) #to retrieve grcm38 annotation for mouse genome
+library(org.Mm.eg.db) #Mouse genome annotation
+library(DOSE)
+library(pathview)
+library(clusterProfiler)
+library(AnnotationHub) 
+library(ensembldb)
+library(tidyverse)
+library(ggnewscale)
+library(SPIA)
+
+```
+
+```{r}
+#Filter Differentially Expressed Genes by p value 0.05
+res1_ordered_filtered <- res1_ordered[res1_ordered$pvalue<0.05,]
+```
+```{r}
+res1_ordered_filtered
+```
+
+
+
+#Gene Enrichment Analysis
+
+```{r}
+idx <- grcm38$ensgene %in% rownames(res1_ordered)
+
+ids <- grcm38[idx, ]
+
+non_duplicates <- which(duplicated(ids$ensgene) == FALSE)
+
+ids <- ids[non_duplicates, ]
+
+```
+```{r}
+ids
+```
+
+
+
+```{r}
+## Use mouse genome 
+ego <- enrichGO(gene = rownames(res1_ordered_filtered), 
+                universe =ids$ensgene ,
+                keyType = "ENSEMBL",
+                OrgDb = org.Mm.eg.db, 
+                ont = "ALL",
+                readable = TRUE,
+                pAdjustMethod="none",
+                pool=TRUE)
+                
+## Output results from GO analysis to a table
+enriched_genes_res1 <- data.frame(ego)
+```
+```{r}
+enriched_genes_res1
+```
+
+
+
+```{r fig.width=15,fig.height=20}
+dotplot(ego, showCategory=50)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))
+```
+
+
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DOSE")
+```
+```{r}
+ install.packages("httr")
+```
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("SPIA")
+```
+
+
+#SPIA 
+
+
+```{r}
+
+# mouse genome load
+grcm38
+
+# check that ensgene in our df is prsent in the mouse genome df
+
+idx <- grcm38$ensgene %in% rownames(res1_ordered)
+head(idx)
+
+# df with all the ids that are in our df from the mouse genome df
+ids <- grcm38[idx, ]
+
+head(ids)
+
+# remove duplicates
+
+non_duplicates <- which(duplicated(ids$ensgene) == FALSE)
+ids <- ids[non_duplicates, ]
+
+```
+```{r}
+
+
+# entrezID contains only the IDs that are also in our df
+
+entrezID= grcm38[grcm38$ensgene %in% rownames(res1_ordered), ]
+
+# check nrow entrezID
+head(entrezID)
+
+# create a vector of only the entrezIDs
+entrez_ID_vector = c(entrezID[[2]])
+
+head(entrez_ID_vector)
+
+# create new df that contains only the entrezID, lfc and padj
+res2= data.frame(log2foldchange= subset(res1_ordered$log2FoldChange, grcm38$ensgene %in% rownames(res1_ordered)))
+padj = subset(res1_ordered$padj, grcm38$ensgene %in% rownames(res1_ordered))
+res2 = cbind(padj, res2)
+res2 = cbind(entrez_ID_vector, res2)
+
+# omit all "na" values
+res2 = na.omit(res2)
+
+head(res2)
+```
+```{r}
+## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
+
+# bg entrez contains all the entrezIDs 
+
+background_entrez <- res2$entrez_ID_vector
+
+# sig res entrez contains all the entrezIDs that have padj <0.05
+
+sig_res_entrez <- res2[which(res2$padj < 0.05), ]
+
+# vector of only lfc values
+sig_entrez <- sig_res_entrez$log2foldchange
+
+head(sig_res_entrez)
+
+
+# adding entrezIDs as names for the sig entrez
+names(sig_entrez) <- sig_res_entrez$entrez
+
+head(sig_entrez)
+
+# remove dups
+dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
+sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
+```
+
+```{r}
+## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
+
+# bg entrez contains all the entrezIDs 
+
+background_entrez <- res2$entrez_ID_vector
+
+# sig res entrez contains all the entrezIDs that have padj <0.05
+
+sig_res_entrez <- res2[which(res2$padj < 0.05), ]
+
+# vector of only lfc values
+sig_entrez <- sig_res_entrez$log2foldchange
+
+# adding entrezIDs as names for the sig entrez
+names(sig_entrez) <- sig_res_entrez$entrez
+
+head(sig_entrez)
+
+# remove dups
+dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
+sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
+```
+
+```{r}
+head(sig_entrez)
+```
+
+```{r}
+
+
+#de= as.vector(sig_entrez)
+
+#de = sort(de, decreasing = FALSE)
+
+# this step takes time
+
+spia_result <- spia(de=sig_entrez, all=background_entrez, organism="mmu")
+
+
+plotP(spia_result, threshold=0.05) 
+
+
+write.csv(spia_result, file = '/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/SPIA_J20.csv')
+```
+
+```{r}
+spia_result
+```
+
+```{r}
+
+# view one record at a time
+
+subset(spia_result, ID == "04810")
+
+```
+
+
+
