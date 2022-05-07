@@ -155,7 +155,7 @@ enriched_genes_res1
 
 
 ```{r fig.width=15,fig.height=20}
-dotplot(ego, showCategory=50)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))
+dotplot(ego, showCategory=50)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))+ggtitle('Enriched genes when comparing WT_J0 and J20 mice')+ theme(plot.title = element_text(size=16))
 ```
 
 
@@ -303,14 +303,67 @@ write.csv(spia_result, file = '/Users/danielaquijano/Documents/GitHub/Transcript
 ```{r}
 spia_result
 ```
+```{r}
+#Get gene symbols of top 50 differentially expressed genes
+
+top_50_res1_ordered_filtered<-head(res1_ordered_filtered, 50)
+top_50_gene_symbols= ids[ids$ensgene %in% rownames(top_50_res1_ordered_filtered), ]
+top_50_gene_symbols
+```
 
 ```{r}
 
-# view one record at a time
+p1 <- cnetplot(ego,  categorySize="pvalue", showCategory = 4,node_label="all",cex_label_gene = 0.5,cex_label_category=0.9,shadowtext='category',color_category='pink', color_gene='purple' )+ggtitle('Enriched Genes when comparing J20and WT_J20 mice')
+```
+```{r}
+p1
+```
 
-subset(spia_result, ID == "04810")
+```{r}
+
+p2 <- cnetplot(ego, showCategory = 2 , circular = TRUE, colorEdge = TRUE,node_label="gene",cex_label_gene = 0.6,color_category='pink', color_gene='purple') +ggtitle('Enriched Genes when comparing J20and WT_J20 mice')
 
 ```
+```{r}
+p2
+```
+
+### Create Heatmap
+```{r}
+norm_counts_top_40<-normalizedcounts.matrix[rownames(head(res1_ordered_filtered,40)),]
+```
+```{r}
+nrow(norm_counts_top_40)
+```
+
+```{r}
+head(design_matrix)
+```
+```{r}
+annotation_columns<-design_matrix
+```
+```{r}
+row.names(annotation_columns) <- colnames(norm_counts_top_40)
+```
+```{r}
+library(pheatmap)
+```
+
+```{r}
+#png("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/DGE_Images/heatmap_j20_wtj20.png")
+tiff("Plot3.tiff", width = 7, height = 5, units = 'in', res = 300)
+pheatmap(norm_counts_top_40, color=colorRampPalette(c("white", "light pink", "purple"))(30), scale="row", cluster_cols = T, show_rownames = T,fontsize = 7,fontsize_row = 4, fontsize_col = 4,labels_row = rownames(dists),annotation_col =annotation_columns,main='Differentially Expressed Genes in J20 and WT_J20 mice' )
+dev.off()
+```
+
+
+```{r}
+file.exists('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/DGE_Images/')
+```
+
+
+
+
 
 
 
