@@ -1,0 +1,362 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Goals for DGE Analysis
+
+The goals for this analysis are to investigate how the gene expression changes based on the mouse model
+Questions to answer:
+-What genes are differentially expressed due to Mouse Model Alone?
+
+### Import experimental design matrix.
+
+```{r}
+library(DESeq2)
+library(pheatmap)
+library(dplyr)
+library(dendextend)
+```
+
+
+```{r}
+design_matrix<-read.table('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design.csv',sep=',',header=TRUE)
+```
+
+
+```{r}
+rownames(design_matrix)<-design_matrix$Sample
+design_matrix$Sample<-NULL
+```
+```{r}
+design_matrix
+```
+Import matrix containing the counts for all samples. These counts represent the forward strand counts since this was a stranded library. 
+
+```{r}
+counts_matrix<-read.table("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
+```
+
+Because the numbers after the dot in the ensembl IDs represent versions of genes in certain annotations, we can remove these to more easily conduct our differential gene expression analysis. 
+```{r}
+counts_matrix$V1<-gsub("\\..*","",counts_matrix$V1)
+```
+```{r}
+counts_matrix
+```
+
+```{r}
+rownames(counts_matrix)<-counts_matrix$V1
+counts_matrix$V1<-NULL
+```
+
+We need to sort the counts_matrix as well as our experimental design matrix in order to run DESEQ2    
+```{r}
+counts_matrix<-counts_matrix[,order(colnames(counts_matrix))]
+```
+```{r}
+counts_matrix
+```
+```{r}
+design_matrix<-design_matrix[order(rownames(design_matrix)),]
+```
+```{r}
+design_matrix
+```
+```{r}
+transform(design_matrix, Age = as.character(Age))
+```
+
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
+                              colData = design_matrix,
+                              design = ~as.factor(Age))
+dds
+```
+Remove genes with counts less than 10
+
+```{r}
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
+
+Run DESeq
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+rawcounts.matrix <- counts(dds,normalized=F)
+normalizedcounts.matrix <- counts(dds,normalized=T)
+```
+
+```{r}
+vst_dds <- vst(dds)
+dists <- dist(t(assay(vst_dds)))
+
+```
+
+
+
+
+Trying to rename labels....
+```{r}
+dend <- dists %>%  hclust %>% as.dendrogram
+dend %>% set("labels", c(rep('rtg4510',26),rep('J20',42),rep('rtg4510',4))) %>% set("labels_cex", 0.5) %>% plot
+```
+`
+
+
+```{r}
+PCA_Genotype<-plotPCA(vst_dds,intgroup=c("Age"))+labs(title = "PCA of mice of different Ages", color = "Group")+coord_fixed(ratio=3)
+PCA_Genotype
+```
+# Obtain results based on different contrasts
+
+### What genes are differentially expressed due to Mouse Model Alone?
+```{r}
+res_1 <- results(dds, contrast = c("Age",'6','12'))
+```
+```{r}
+res1_ordered <- res_1[order(res_1$pvalue),] 
+head(res1_ordered,200)
+```
+```{r}
+nrow(res1_ordered)
+```
+
+
+Filter the res1_ordered byp value to obtain only those genes with p value less than 0.05
+```{r}
+#Filter Differentially Expressed Genes by p value 0.05
+res1_ordered_filtered <- res1_ordered[res1_ordered$pvalue<0.05,]
+```
+See how many genes have p value equals to zero
+```{r}
+res1_ordered_filtered_2 <- res1_ordered[res1_ordered$pvalue==0,]
+```
+
+Genes with pvalue==0
+```{r}
+res1_ordered_filtered_2
+```
+Genes with pvalue<0.05
+```{r}
+res1_ordered_filtered
+```
+
+
+#GO-Term Enrichment
+
+Install Mouse annotation library:
+```{r}
+BiocManager::install("org.Mm.eg.db")
+```
+
+```{r}
+install.packages("devtools")
+devtools::install_github("stephenturner/annotables")
+```
+```{r}
+install.packages("ggnewscale")
+```
+
+```{r}
+library(biomaRt) #For conversion of transcript IDs to gene ID
+library(annotables) #to retrieve grcm38 annotation for mouse genome
+library(org.Mm.eg.db) #Mouse genome annotation
+library(DOSE)
+library(pathview)
+library(clusterProfiler)
+library(AnnotationHub) 
+library(ensembldb)
+library(tidyverse)
+library(ggnewscale)
+```
+
+
+
+Because we have transcript IDs, we want ensembl ids in order to be able to conduct GO Term enrichment we need ensembl ID
+
+
+In order to conduct the hypergeometric test on each set of differentially expressed genes we need to have two sets of genes: a background set, and a significant differentially expressed gene set. The background set will be comprised of all differentially expressed genes and the genes of interest will be those with significant p values (0.05).
+
+We are using 'ALL' for ontology because we want to see all of the differentially expressed genes accross all categories.
+
+```{r}
+idx <- grcm38$ensgene %in% rownames(res1_ordered)
+
+ids <- grcm38[idx, ]
+
+non_duplicates <- which(duplicated(ids$ensgene) == FALSE)
+
+ids <- ids[non_duplicates, ]
+
+```
+```{r}
+ids
+```
+
+```{r}
+## Use mouse genome 
+ego <- enrichGO(gene = rownames(res1_ordered_filtered), 
+                universe =ids$ensgene ,
+                keyType = "ENSEMBL",
+                OrgDb = org.Mm.eg.db, 
+                ont = "ALL",
+                readable = TRUE,
+                pAdjustMethod="none",
+                pool=TRUE)
+                
+## Output results from GO analysis to a table
+enriched_genes_res1 <- data.frame(ego)
+```
+```{r}
+enriched_genes_res1
+```
+
+```{r fig.width=15,fig.height=20}
+dotplot(ego, showCategory=50)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))+ggtitle('Enriched genes when comparing rtg4510 and J20 mice')+ theme(plot.title = element_text(size=16))
+```
+
+#SPIA 
+
+
+```{r}
+
+# mouse genome load
+grcm38
+
+# check that ensgene in our df is prsent in the mouse genome df
+
+idx <- grcm38$ensgene %in% rownames(res1_ordered)
+head(idx)
+
+# df with all the ids that are in our df from the mouse genome df
+ids <- grcm38[idx, ]
+
+head(ids)
+
+# remove duplicates
+
+non_duplicates <- which(duplicated(ids$ensgene) == FALSE)
+ids <- ids[non_duplicates, ]
+
+```
+```{r}
+
+
+# entrezID contains only the IDs that are also in our df
+
+entrezID= grcm38[grcm38$ensgene %in% rownames(res1_ordered), ]
+
+# check nrow entrezID
+head(entrezID)
+
+# create a vector of only the entrezIDs
+entrez_ID_vector = c(entrezID[[2]])
+
+head(entrez_ID_vector)
+
+# create new df that contains only the entrezID, lfc and padj
+res2= data.frame(log2foldchange= subset(res1_ordered$log2FoldChange, grcm38$ensgene %in% rownames(res1_ordered)))
+padj = subset(res1_ordered$padj, grcm38$ensgene %in% rownames(res1_ordered))
+res2 = cbind(padj, res2)
+res2 = cbind(entrez_ID_vector, res2)
+
+# omit all "na" values
+res2 = na.omit(res2)
+
+head(res2)
+```
+```{r}
+## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
+
+# bg entrez contains all the entrezIDs 
+
+background_entrez <- res2$entrez_ID_vector
+
+# sig res entrez contains all the entrezIDs that have padj <0.05
+
+sig_res_entrez <- res2[which(res2$padj < 0.05), ]
+
+# vector of only lfc values
+sig_entrez <- sig_res_entrez$log2foldchange
+
+head(sig_res_entrez)
+
+
+# adding entrezIDs as names for the sig entrez
+names(sig_entrez) <- sig_res_entrez$entrez
+
+head(sig_entrez)
+
+# remove dups
+dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
+sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
+```
+
+
+
+```{r}
+
+#de= as.vector(sig_entrez)
+
+#de = sort(de, decreasing = FALSE)
+
+# this step takes time
+
+spia_result <- spia(de=sig_entrez, all=background_entrez, organism="mmu")
+
+```
+
+```{r}
+write.csv(spia_result, file = '/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/SPIA_J20_vs_TG.csv')
+```
+
+```{r}
+spia_result
+```
+```{r}
+
+p1 <- cnetplot(ego,  categorySize="pvalue", showCategory = 4,node_label="category",cex_label_gene = 0.5,cex_label_category=0.9,shadowtext='category',color_category='pink', color_gene='purple' )+ggtitle('Enriched Genes when comparing J20 and rtg4510 mice')
+```
+```{r}
+p1
+```
+```{r}
+
+p2 <- cnetplot(ego,  categorySize="pvalue", showCategory = 1,node_label="all",cex_label_gene = 0.5,cex_label_category=0.9,shadowtext='category',color_category='pink', color_gene='darkmagenta' )+ggtitle('Enriched Genes when comparing J20 and rtg4510 mice')
+```
+```{r}
+p2
+```
+### Create Heatmap
+
+```{r}
+norm_counts_top_40<-normalizedcounts.matrix[rownames(head(res1_ordered_filtered,40)),]
+```
+```{r}
+nrow(norm_counts_top_40)
+```
+
+```{r}
+head(design_matrix)
+```
+```{r}
+annotation_columns<-design_matrix
+```
+```{r}
+row.names(annotation_columns) <- colnames(norm_counts_top_40)
+```
+```{r}
+library(pheatmap)
+```
+
+```{r}
+
+tiff("Heatmap_J20_vs_rtg4510.tiff", width = 7, height = 5, units = 'in', res = 300)
+pheatmap(norm_counts_top_40, color=colorRampPalette(c("white", "maroon1", "darkmagenta"))(30), scale="row", cluster_cols = T, show_rownames = T,fontsize = 7,fontsize_row = 4, fontsize_col = 4,labels_row = rownames(dists),annotation_col =annotation_columns,main='Differentially Expressed Genes in J20 and rtg4510 mice' )
+dev.off()
+```
