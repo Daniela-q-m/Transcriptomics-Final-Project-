@@ -254,33 +254,7 @@ dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
 sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
 ```
 
-```{r}
-## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
 
-# bg entrez contains all the entrezIDs 
-
-background_entrez <- res2$entrez_ID_vector
-
-# sig res entrez contains all the entrezIDs that have padj <0.05
-
-sig_res_entrez <- res2[which(res2$padj < 0.05), ]
-
-# vector of only lfc values
-sig_entrez <- sig_res_entrez$log2foldchange
-
-# adding entrezIDs as names for the sig entrez
-names(sig_entrez) <- sig_res_entrez$entrez
-
-head(sig_entrez)
-
-# remove dups
-dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
-sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
-```
-
-```{r}
-head(sig_entrez)
-```
 
 ```{r}
 

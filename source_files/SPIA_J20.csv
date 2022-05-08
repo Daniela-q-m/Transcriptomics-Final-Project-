@@ -2,46 +2,46 @@
 1,Basal cell carcinoma,5217,48,3,0.000304143,3.52775823,0.193,0.000630615,0.019118587,0.034683823,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05217+216795+22415+12006
 2,Wnt signaling pathway,4310,124,4,0.000359673,1.17591941,0.263,0.000971095,0.019118587,0.053410215,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04310+12444+12006+216795+22415
 3,Melanogenesis,4916,78,3,0.001263824,7.415698994,0.081,0.001042832,0.019118587,0.057355762,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04916+14679+216795+22415
-4,Cocaine addiction,5030,40,2,0.005367704,-1.322925094,0.1,0.004578619,0.050684478,0.251824064,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05030+21823+14679
 5,Aldosterone-regulated sodium reabsorption,4960,33,2,0.003677766,0.89256686,0.147,0.00460768,0.050684478,0.253422391,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04960+20278+16334
 6,Leukocyte transendothelial migration,4670,94,1,0.22846688,6.855691821,0.009,0.014777707,0.129129421,0.812773869,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04670+14679
-7,Progesterone-mediated oocyte maturation,4914,75,2,0.017979216,-1.025402807,0.153,0.01896926,0.129129421,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04914+16334+14679
 8,HTLV-I infection,5166,223,3,0.023058279,2.049994476,0.13,0.020413348,0.129129421,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05166+12444+216795+22415
-9,Parkinson's disease,5012,107,3,0.003121406,0,1,0.021130269,0.129129421,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05012+66925+12858+21823
-10,GABAergic synapse,4727,74,1,0.184574089,-1.157559457,0.021,0.025399551,0.133796618,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04727+14679
-11,Regulation of actin cytoskeleton,4810,176,3,0.012334755,-1.348801876,0.387,0.030286576,0.133796618,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04810+14673+64654+16334
 12,Long-term depression,4730,54,2,0.009612582,0.739126643,0.514,0.031177932,0.133796618,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04730+14673+14679
 13,Toxoplasmosis,5145,103,1,0.247459337,2.645850188,0.023,0.035109954,0.133796618,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05145+14679
 14,Focal adhesion,4510,178,2,0.085655811,3.494768152,0.067,0.035354626,0.133796618,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04510+12390+12444
-15,Gastric acid secretion,4971,57,1,0.14536007,-1.322925094,0.041,0.036489987,0.133796618,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04971+14679
-16,Transcriptional misregulation in cancer,5202,139,3,0.006484403,0,1,0.03915513,0.134595759,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05202+209446+12444+18053
 17,Pertussis,5133,61,1,0.154748983,2.645850188,0.046,0.042319666,0.136916566,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05133+14679
-18,Hedgehog signaling pathway,4340,49,2,0.007968059,0,1,0.046472225,0.141998466,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04340+216795+22415
 19,Dopaminergic synapse,4728,99,2,0.030163067,0.440975031,0.337,0.056809988,0.158116427,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04728+14679+21823
 20,Alcoholism,5034,115,2,0.039659803,1.322925094,0.276,0.060365271,0.158116427,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05034+21823+14679
-21,Glutamatergic synapse,4724,101,1,0.243278564,-1.202659177,0.045,0.060371727,0.158116427,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04724+14679
 22,Melanoma,5218,60,1,0.152411221,3.830325015,0.089,0.071896333,0.16178699,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05218+64654
 23,Retrograde endocannabinoid signaling,4723,83,1,0.20461892,0.110243758,0.067,0.072518541,0.16178699,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04723+14679
 24,MAPK signaling pathway,4010,219,2,0.121164746,1.520100121,0.115,0.07347965,0.16178699,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04010+14673+64654
-25,Cell cycle,4110,107,2,0.034782948,-0.905533031,0.401,0.073539541,0.16178699,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04110+12544+12444
 26,Type II diabetes mellitus,4930,40,1,0.104310848,0.89256686,0.183,0.094655082,0.200231904,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04930+16334
-27,Vascular smooth muscle contraction,4270,89,1,0.217714547,-1.751395353,0.093,0.099206977,0.202088286,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04270+14673
 28,Serotonergic synapse,4726,91,1,0.222032887,0.601329588,0.135,0.135107098,0.257163056,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04726+14679
 29,Chagas disease (American trypanosomiasis),5142,84,1,0.206816261,1.322925094,0.155,0.142339115,0.257163056,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05142+14679
-30,Neurotrophin signaling pathway,4722,102,1,0.245371771,-1.530700439,0.132,0.143481464,0.257163056,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04722+18053
 31,Morphine addiction,5032,73,1,0.182316735,0.110243758,0.18,0.14494645,0.257163056,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu05032+14679
+35,Insulin signaling pathway,4910,116,1,0.274090949,1.729212424,0.194,0.209195348,0.323154993,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04910+16334
+36,Cholinergic synapse,4725,89,1,0.217714547,0.808454224,0.263,0.221029287,0.323154993,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04725+14679
+40,Gap junction,4540,71,1,0.177783744,2.78E-17,0.35,0.235021813,0.323154993,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04540+14679
+43,Oocyte meiosis,4114,93,1,0.226327998,0.297522287,0.506,0.362689766,0.458912595,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04114+16334
+4,Cocaine addiction,5030,40,2,0.005367704,-1.322925094,0.1,0.004578619,0.050684478,0.251824064,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05030+21823+14679
+7,Progesterone-mediated oocyte maturation,4914,75,2,0.017979216,-1.025402807,0.153,0.01896926,0.129129421,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04914+16334+14679
+9,Parkinson's disease,5012,107,3,0.003121406,0,1,0.021130269,0.129129421,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05012+66925+12858+21823
+10,GABAergic synapse,4727,74,1,0.184574089,-1.157559457,0.021,0.025399551,0.133796618,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04727+14679
+11,Regulation of actin cytoskeleton,4810,176,3,0.012334755,-1.348801876,0.387,0.030286576,0.133796618,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04810+14673+64654+16334
+15,Gastric acid secretion,4971,57,1,0.14536007,-1.322925094,0.041,0.036489987,0.133796618,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04971+14679
+16,Transcriptional misregulation in cancer,5202,139,3,0.006484403,0,1,0.03915513,0.134595759,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05202+209446+12444+18053
+18,Hedgehog signaling pathway,4340,49,2,0.007968059,0,1,0.046472225,0.141998466,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04340+216795+22415
+21,Glutamatergic synapse,4724,101,1,0.243278564,-1.202659177,0.045,0.060371727,0.158116427,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04724+14679
+25,Cell cycle,4110,107,2,0.034782948,-0.905533031,0.401,0.073539541,0.16178699,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04110+12544+12444
+27,Vascular smooth muscle contraction,4270,89,1,0.217714547,-1.751395353,0.093,0.099206977,0.202088286,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04270+14673
+30,Neurotrophin signaling pathway,4722,102,1,0.245371771,-1.530700439,0.132,0.143481464,0.257163056,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04722+18053
 32,Tight junction,4530,107,2,0.034782948,0,1,0.151605932,0.260572696,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04530+72058+14679
 33,Regulation of autophagy,4140,17,1,0.045703417,0,1,0.186725068,0.311208447,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04140+16334
 34,Maturity onset diabetes of the young,4950,18,1,0.048327514,0,1,0.194748005,0.315033537,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04950+16334
-35,Insulin signaling pathway,4910,116,1,0.274090949,1.729212424,0.194,0.209195348,0.323154993,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04910+16334
-36,Cholinergic synapse,4725,89,1,0.217714547,0.808454224,0.263,0.221029287,0.323154993,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04725+14679
 37,Alzheimer's disease,5010,142,2,0.057850801,0,1,0.222719103,0.323154993,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05010+66925+12858
 38,Huntington's disease,5016,146,2,0.0607542,0,1,0.230921796,0.323154993,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05016+66925+12858
 39,Taste transduction,4742,23,1,0.061342898,0,1,0.232567849,0.323154993,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04742+20278
-40,Gap junction,4540,71,1,0.177783744,2.78E-17,0.35,0.235021813,0.323154993,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04540+14679
 41,Measles,5162,103,1,0.247459337,-0.301844344,0.375,0.313407707,0.420424973,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05162+12444
 42,Type I diabetes mellitus,4940,38,1,0.099357035,0,1,0.328775956,0.430539943,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04940+16334
-43,Oocyte meiosis,4114,93,1,0.226327998,0.297522287,0.506,0.362689766,0.458912595,1,Activated,http://www.genome.jp/dbget-bin/show_pathway?mmu04114+16334
 44,Endometrial cancer,5213,45,1,0.116579515,0,1,0.367130076,0.458912595,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05213+12006
 45,Amphetamine addiction,5031,51,1,0.13108589,0,1,0.39743964,0.485759561,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu05031+21823
 46,mTOR signaling pathway,4150,55,1,0.140627585,0,1,0.416488298,0.497809483,1,Inhibited,http://www.genome.jp/dbget-bin/show_pathway?mmu04150+16334
