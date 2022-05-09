@@ -120,6 +120,10 @@ res_1 <- results(dds, contrast = c("Age", "6", "12"))
 res1_ordered <- res_1[order(res_1$padj),] 
 head(res1_ordered)
 ```
+```{r}
+plotDispEsts(dds)
+
+```
 
 Install Mouse annotation library:
 
@@ -249,7 +253,7 @@ ego
 
 ```{r fig.width=15,fig.height=20}
 ## Dotplot 
-dotplot(ego, showCategory=30)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))+ggtitle('Enriched genes when comparing J20 mice at 6 and 12 months')+ theme(plot.title = element_text(size=16))
+dotplot(ego, showCategory=20)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))+ggtitle('Enriched genes when comparing J20 mice at 6 and 12 months')+ theme(plot.title = element_text(size=16))
 
 #barplot(ego, showCategory = 20)
 ```
@@ -381,7 +385,7 @@ library(pheatmap)
 
 ```{r}
 
-tiff("Heatmap_WT_TG_vs_rtg4510.tiff", width = 7, height = 5, units = 'in', res = 300)
-pheatmap(norm_counts_top_40, color=colorRampPalette(c("white", "lavender", "darkorchid1"))(30), scale="row", cluster_cols = T, show_rownames = T,fontsize = 7,fontsize_row = 4, fontsize_col = 4,labels_row = rownames(dists),annotation_col =annotation_columns,main='Differentially Expressed Genes in rTg4510 mice at 2 and 8 months old' )
+tiff("Heatmap_J20_age.tiff", width = 7, height = 5, units = 'in', res = 300)
+pheatmap(norm_counts_top_40, color=colorRampPalette(c("white", "orchid3", "purple4"))(30), scale="row", cluster_cols = T, show_rownames = T,fontsize = 7,fontsize_row = 4, fontsize_col = 4,labels_row = rownames(dists),annotation_col =annotation_columns,main='Differentially Expressed Genes in J20 mice at 6 and 12 months old' )
 dev.off()
 ```
