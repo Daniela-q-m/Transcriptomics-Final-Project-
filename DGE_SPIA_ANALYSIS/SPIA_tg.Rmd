@@ -1,0 +1,260 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+The goals for this analysis are to investigate how the gene expression changes based on the mouse model, genotype within the mouse model, and age.
+Questions to answer:
+-What genes are deferentially expressed due to Mouse Model Alone?
+-How does aging affect gene expression within each mouse model?
+-How does the genotype within each mouse model affect gene expression at different time points?
+
+### Import experimental design matrix.
+
+```{r}
+library(DESeq2)
+library(pheatmap)
+library(dplyr)
+library(dendextend)
+```
+
+```{r}
+design_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/Experimental_Design_TG.csv',sep=',',header=TRUE)
+
+head(design_matrix)
+```
+
+```{r}
+rownames(design_matrix)<-design_matrix$Sample
+design_matrix$Sample<-NULL
+```
+```{r}
+design_matrix
+```
+
+```{r}
+counts_matrix<-read.table("/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
+```
+```{r}
+counts_matrix
+```
+
+
+Because the numbers after the dot in the ensembl IDs represent versions of genes in certain annotations, we can remove these to more easily conduct our differential gene expression analysis. 
+```{r}
+counts_matrix$V1<-gsub("\\..*","",counts_matrix$V1)
+```
+```{r}
+counts_matrix
+```
+
+```{r}
+# remove the "V1" from col 1
+rownames(counts_matrix)<-counts_matrix$V1
+counts_matrix$V1<-NULL
+
+head(counts_matrix)
+```
+```{r}
+counts_matrix<-counts_matrix[,order(colnames(counts_matrix))]
+counts_matrix
+```
+
+```{r}
+design_matrix<-design_matrix[order(rownames(design_matrix)),]
+
+design_matrix
+
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
+                              colData = design_matrix,
+                              design = ~ Genotype + Age+ Model)
+dds
+
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
+
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+rawcounts.matrix <- counts(dds,normalized=F)
+normalizedcounts.matrix <- counts(dds,normalized=T)
+
+```
+
+
+```{r}
+res_1 <- results(dds, contrast = c("Genotype","rtg4510","WT_TG"))
+
+res1_ordered <- res_1[order(res_1$pvalue),] 
+head(res1_ordered,200)
+```
+
+#Filter Differentially Expressed Genes by p value 0.05 and lfc <-1 and >+1
+```{r}
+diffexpgenes= data.frame(subset(res1_ordered, padj < 0.05 & (log2FoldChange > 1 | log2FoldChange < -1)))
+
+nrow(diffexpgenes)
+```
+
+Install Mouse annotation library:
+
+
+```{r}
+library(biomaRt) #For conversion of transcript IDs to gene ID
+
+library(annotables) #to retrieve grcm38 annotation for mouse genome
+library(org.Mm.eg.db) #Mouse genome annotation
+library(DOSE)
+library(pathview)
+library(clusterProfiler)
+library(AnnotationHub) 
+library(ensembldb)
+library(tidyverse)
+library(ggnewscale)
+```
+
+```{r}
+grcm38
+idx <- grcm38$ensgene %in% rownames(res1_ordered)
+head(idx)
+```
+
+
+```{r}
+ids <- grcm38[idx, ]
+
+head(ids)
+
+non_duplicates <- which(duplicated(ids$ensgene) == FALSE)
+ids <- ids[non_duplicates, ]
+
+nrow(res1_ordered)
+rownames(res1_ordered)
+entrezID= grcm38[grcm38$ensgene %in% rownames(res1_ordered), ]
+
+head(entrezID)
+
+entrez_ID_vector = c(entrezID[[2]])
+
+head(entrez_ID_vector)
+
+res2= data.frame(log2foldchange= subset(res1_ordered$log2FoldChange, grcm38$ensgene %in% rownames(res1_ordered)))
+padj = subset(res1_ordered$padj, grcm38$ensgene %in% rownames(res1_ordered))
+res2 = cbind(padj, res2)
+res2 = cbind(entrez_ID_vector, res2)
+
+res2 = na.omit(res2)
+
+head(res2)
+#res2 = cbind(res1_ordered$log2FoldChange, res2)
+
+#res1_ordered_tb <- res1_ordered %>%
+  #data.frame() %>%
+  #rownames_to_column(var="ensgene") %>% 
+  #as_tibble()
+
+#res_entrez= as.data.frame(inner_join(res1_ordered_tb, entrezID))
+
+
+#res_entrez= inner_join(res1_ordered_tb, entrezID, by= c("gene" = ))
+```
+```{r}
+## Create background dataset for hypergeometric testing using all genes tested for significance in the results                 
+allOE_genes <- as.character(res_entrez$ensgene)
+
+## Extract significant results
+sigOE <- filter(res_entrez, padj < 0.05)
+
+sigOE_genes <- as.character(sigOE$ensgene)
+```
+
+```{r}
+## Run GO enrichment analysis 
+ego <- enrichGO(gene = sigOE_genes, 
+                universe = allOE_genes,
+                keyType = "ENSEMBL",
+                OrgDb = org.Hs.eg.db, 
+                ont = "BP", 
+                pAdjustMethod = "BH", 
+                qvalueCutoff = 0.05, 
+                readable = TRUE)
+                
+## Output results from GO analysis to a table
+cluster_summary <- data.frame(ego)
+```
+
+```{r}
+
+```
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+# Set-up
+
+#BiocManager::install("SPIA")
+library(SPIA)
+
+## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
+
+background_entrez <- res2$entrez_ID_vector
+
+sig_res_entrez <- res2[which(res2$padj < 0.05), ]
+
+sig_entrez <- sig_res_entrez$log2foldchange
+
+head(sig_res_entrez)
+
+
+
+names(sig_entrez) <- sig_res_entrez$entrez
+
+head(sig_entrez)
+
+dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
+sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
+```
+
+
+```{r}
+
+# currently stuck at this error message
+#de= as.vector(sig_entrez)
+
+#de = sort(de, decreasing = FALSE)
+
+
+spia_result <- spia(de=sig_entrez, all=background_entrez, organism="mmu")
+
+head(spia_result)
+
+```
+```{r}
+plotP(spia_result, threshold=0.05) 
+```
+```{r}
+
+write.csv(spia_result, file = "spia_result")
+```
+
+
+```{r}
+subset(spia_result, ID == "04727")
+
+
+```
+
+
