@@ -1,0 +1,396 @@
+---
+title: "ClusterProfiler Analysis"
+output: html_notebook
+---
+
+
+The goals for this analysis are to investigate how the gene expression changes based on the mouse model, genotype within the mouse model, and age.
+Questions to answer:
+-What genes are deferentially expressed due to Mouse Model Alone?
+-How does aging affect gene expression within each mouse model?
+-How does the genotype within each mouse model affect gene expression at different time points?
+
+### Import experimental design matrix.
+
+```{r}
+
+library(DESeq2)
+library(pheatmap)
+library(dplyr)
+library(dendextend)
+```
+
+```{r}
+design_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design_TG.csv',sep=',',header=TRUE)
+
+head(design_matrix)
+```
+
+```{r}
+rownames(design_matrix)<-design_matrix$Sample
+design_matrix$Sample<-NULL
+
+design_matrix
+
+
+
+```
+
+```{r}
+counts_matrix<-read.table("/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
+
+counts_matrix
+```
+
+
+Because the numbers after the dot in the ensembl IDs represent versions of genes in certain annotations, we can remove these to more easily conduct our differential gene expression analysis. 
+```{r}
+counts_matrix$V1<-gsub("\\..*","",counts_matrix$V1)
+
+counts_matrix
+```
+
+```{r}
+# remove the "V1" from col 1
+rownames(counts_matrix)<-counts_matrix$V1
+counts_matrix$V1<-NULL
+
+#head(counts_matrix)
+
+counts_matrix<-counts_matrix[,order(colnames(counts_matrix))]
+counts_matrix
+```
+
+```{r}
+design_matrix<-design_matrix[order(rownames(design_matrix)),]
+
+design_matrix
+
+```
+
+```{r}
+
+design_matrix$Age = factor(design_matrix$Age)
+
+design_matrix$Age
+
+dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
+                              colData = design_matrix,
+                              design = ~ Genotype + Age)
+dds
+
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
+
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+normalizedcounts.matrix <- counts(dds,normalized=T)
+
+```
+
+
+```{r}
+vst_dds <- vst(dds)
+
+dists <- dist(t(assay(vst_dds)))
+head(vst_dds)
+```
+
+
+```{r}
+
+
+PCA_Genotype<-plotPCA(vst_dds,intgroup=c("Age"))
+
+PCA_Genotype
+```
+
+```{r}
+resultsNames(dds)
+
+dds$Age
+res_1 <- results(dds, contrast = c("Age", "two", "eight"))
+
+res1_ordered <- res_1[order(res_1$padj),] 
+head(res1_ordered)
+```
+
+Install Mouse annotation library:
+
+
+```{r}
+library(biomaRt) #For conversion of transcript IDs to gene ID
+library(annotables) #to retrieve grcm38 annotation for mouse genome
+library(org.Mm.eg.db) #Mouse genome annotation
+library(DOSE)
+library(pathview)
+library(clusterProfiler)
+library(AnnotationHub) 
+library(ensembldb)
+library(tidyverse)
+library(ggnewscale)
+```
+
+```{r}
+# mouse genome load
+grcm38
+
+# check that ensgene in our df is prsent in the mouse genome df
+
+idx <- grcm38$ensgene %in% rownames(res1_ordered)
+# head(idx)
+
+# df with all the ids that are in our df from the mouse genome df
+ids <- grcm38[idx, ]
+
+# head(ids)
+
+# remove duplicates
+
+non_duplicates <- which(duplicated(ids$ensgene) == FALSE)
+ids <- ids[non_duplicates, ]
+```
+
+```{r}
+
+#nrow(res1_ordered)
+
+#rownames(res1_ordered)
+
+# entrezID contains only the IDs that are also in our df
+
+ensgeneID= grcm38[grcm38$ensgene %in% rownames(res1_ordered), ]
+
+# entrezID contains only the IDs that are also in our df
+
+entrezID= grcm38[grcm38$ensgene %in% rownames(res1_ordered), ]
+# check nrow ensgeneID
+head(ensgeneID)
+
+# create a vector of only the ensgeneIDs
+ensgene_ID_vector = c(ensgeneID[[1]])
+
+head(ensgene_ID_vector)
+
+
+# create a vector of only the entrezIDs
+entrez_ID_vector = c(entrezID[[2]])
+
+# create a vector of only the gene symbols
+gene_symbols = subset(grcm38$symbol, grcm38$ensgene %in% rownames(res1_ordered))
+
+# create new df that contains only the ensgeneIDs, lfc and padj
+res2= data.frame(log2foldchange= subset(res1_ordered$log2FoldChange, grcm38$ensgene %in% rownames(res1_ordered)))
+padj = subset(res1_ordered$padj, grcm38$ensgene %in% rownames(res1_ordered))
+res2 = cbind(padj, res2)
+res2 = cbind(ensgene_ID_vector, res2)
+res2 = cbind(entrez_ID_vector, res2)
+res2 = cbind(gene_symbols, res2)
+
+
+# omit all "na" values
+res2 = na.omit(res2)
+
+res2 <- res2[order(res2$padj),] 
+head(res2)
+```
+
+```{r}
+## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
+
+# bg entrez contains all the ensgene
+
+allOEgenes = as.character(res2$ensgene_ID_vector)
+
+# sig res entrez contains all the entrezIDs that have padj <0.05
+head(res2)
+
+sigOE <- subset(res2, padj< 0.05)
+
+head(sigOE)
+# vector of only lfc values
+sigOE_genes = as.character(sigOE$ensgene_ID_vector)
+
+head(sigOE_genes)
+
+```
+
+
+```{r}
+## Run GO enrichment analysis 
+ego <- enrichGO(gene = sigOE_genes, 
+                universe = allOEgenes,
+                keyType = "ENSEMBL",
+                OrgDb = org.Mm.eg.db, 
+                ont = "ALL", 
+                pAdjustMethod = "BH", 
+                qvalueCutoff = 0.05, 
+                readable = TRUE,
+                pool  = TRUE)
+
+                
+## Output results from GO analysis to a table
+cluster_summary <- data.frame(ego)
+
+#gene_ratio = cluster_summary[order(cluster_summary$pvalue, decreasing = FALSE), ]
+#head(gene_ratio)
+
+head(ego)
+write.csv(cluster_summary, "WT_TG_vs_rTg4510.csv")
+
+```
+
+
+```{r}
+## Dotplot 
+png("Dotplot rTg4510 Age.png", width = 12, height = 10 , units = 'in', res = 300)
+dotplot(ego, showCategory=10)+theme(text = element_text(size = 16))+ggtitle('Enriched genes when comparing TG 2 & 8 month old mice')+ theme(plot.title = element_text(size=16))
+
+dev.off()
+#barplot(ego, showCategory = 10)
+```
+
+
+
+
+
+```{r fig.width=20,fig.height=20}
+options(ggrepel.max.overlaps = Inf)
+
+## To color genes by log2 fold changes, we need to extract the log2 fold changes from our results table creating a named vector
+OE_foldchanges <- sigOE$log2foldchange
+
+names(OE_foldchanges) <- sigOE$gene_symbols
+
+## Cnetplot details the genes associated with one or more terms - by default gives the top 1 significant term (by padj)
+
+
+png("cnetplot rTg4510 Age.png", width = 12, height = 10 , units = 'in', res = 300)
+
+cnetplot(ego, 
+         categorySize="pvalue", 
+         showCategory = 4,
+         colorEdge = TRUE,
+         circular = FALSE,
+         node_label = "all",
+         cex_category = 1.5,
+         cex_gene = 0.75,
+         cex_label_category = 1.5,
+         cex_label_gene = 0.75,
+         shadowtext = "all")+ggtitle('Enriched pathways when comparing TG mice at ages 2 and 8 months')
+         
+dev.off()
+
+
+```
+
+
+```{r fig.width=15,fig.height=20}
+library(enrichplot)
+ego2 = pairwise_termsim(ego)
+emapplot(ego2, showCategory = 20, colorEdge = TRUE)
+
+```
+
+
+
+
+```{r}
+
+# Set-up
+
+#BiocManager::install("SPIA")
+library(SPIA)
+
+## Significant genes is a vector of fold changes where the names are ENTREZ gene IDs. The background set is a vector of all the genes represented on the platform.
+
+# bg entrez contains all the entrezIDs 
+
+background_entrez <- res2$entrez_ID_vector
+
+# sig res entrez contains all the entrezIDs that have padj <0.05
+
+sig_res_entrez <- res2[which(res2$padj < 0.05), ]
+
+# vector of only lfc values
+sig_entrez <- sig_res_entrez$log2foldchange
+
+head(sig_entrez)
+
+
+# adding entrezIDs as names for the sig entrez
+names(sig_entrez) <- sig_res_entrez$entrez_ID_vector
+
+head(sig_entrez)
+
+# remove dups
+dups<-unique(names(sig_entrez[which(duplicated(names(sig_entrez)))]))
+sig_entrez<-sig_entrez[!(names(sig_entrez) %in% dups)]
+
+
+```
+
+
+
+```{r}
+
+
+#de= as.vector(sig_entrez)
+
+#de = sort(de, decreasing = FALSE)
+
+# this step takes time
+
+spia_result <- spia(de=sig_entrez, all=background_entrez, organism="mmu", plots=FALSE)
+
+head(spia_result, n= 20)
+
+plotP(spia_result, threshold=0.05) 
+
+
+write.csv(spia_result, file = "spia_result_tg.csv")
+```
+
+
+
+```{r}
+
+# view one record at a time
+
+subset(spia_result, ID == "04727")
+
+```
+
+```{r}
+
+head(res1_ordered)
+norm_counts_top_40 = normalizedcounts.matrix[row.names(head(res1_ordered, 40)), ]
+```
+
+```{r}
+nrow(norm_counts_top_40)
+```
+
+```{r}
+head(design_matrix)
+
+annotation_columns<-design_matrix
+
+row.names(annotation_columns) <- colnames(norm_counts_top_40)
+
+library(pheatmap)
+```
+
+```{r}
+
+tiff("Heatmap_WT_TG_vs_rtg4510.tiff", width = 7, height = 5, units = 'in', res = 300)
+pheatmap(norm_counts_top_40, color=colorRampPalette(c("white", "darkseagreen4", "darkslategrey"))(30), scale="row", cluster_cols = T, show_rownames = T,fontsize = 7,fontsize_row = 4, fontsize_col = 4,labels_row = rownames(dists),annotation_col =annotation_columns,main='Differentially Expressed Genes in WT_TG and rTg4510 mutant mice' )
+dev.off()
+```
+
+
