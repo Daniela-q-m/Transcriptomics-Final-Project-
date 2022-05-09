@@ -1,0 +1,113 @@
+---
+title: "Exploratory Data Analysis w GEOQuery"
+output: html_notebook
+---
+
+The purpose of this notebook is to conduct exploratory data analysis on the dataset using GEOQuery. 
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(GEOquery)
+```
+
+```{r}
+#This dataframe was downlaoded from GEO and contains the normalized/processed gene counts for this study.
+df<- read.csv( file = '/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/GSE125957_processed_data .csv')
+dim(df)
+```
+```{r}
+head(df)
+```
+
+```{r}
+gse <- getGEO(GEO = 'GSE125957', GSEMatrix = TRUE)
+```
+```{r}
+gse
+```
+```{r}
+#Get metadata, here we can see that there are 121 rows representing 121 samples
+metadata <- pData(phenoData(gse[[1]])) #First object of the first element in the list. 
+metadata
+```
+```{r}
+#Here we select certain columns of the metadata in order to obtain more information about the samples
+metadata.modified <- metadata %>%
+  select(1,2,11,12,13,14) 
+  #rename(diagnosis= characteristics_ch1.2) %>%
+  #rename( sample=title ) %>%
+  #mutate(diagnosis = gsub("diagnosis: ", "", diagnosis)) 
+```
+```{r}
+metadata.modified
+```
+```{r}
+#Further clean up metadata information
+#Rename age and sample column, remove 'age_months' and 'sample_id' string
+#Rename characteristics_ch1.3 to mouse_model, remove string 'mouse_model: '
+#Rename characteristics_ch1.4 to 'genotype' and replace "genotype/variation: " and "Wild Type" with empty string and WT respectively
+metadata.modified<-metadata.modified %>%
+  rename(age= characteristics_ch1.1) %>%
+  mutate(age = gsub("age_months: ", "", age)) 
+  rename(sample= characteristics_ch1.2)
+  mutate(sample = gsub("sample_id: ", "", sample))
+  rename(mouse_model= characteristics_ch1.3) %>%
+  mutate(mouse_model = gsub("mouse_model: ", "", mouse_model))
+  rename(genotype= characteristics_ch1.4) %>%
+  mutate(genotype = gsub("genotype/variation: ", "", genotype)) %>%
+  mutate(genotype = gsub("Wild Type", "WT", genotype))
+```
+
+```{r}
+head(metadata.modified)
+```
+```{r}
+df_only_counts=df  %>%
+  select(1,7:127) 
+```
+```{r}
+head(df_only_counts)
+```
+```{r}
+#Make long format from counts data frame
+#Select the range of column samples
+df_long <- gather(df_only_counts, key='samples', value='FPKM', K17:J24, factor_key=TRUE)
+head(df_long)
+```
+```{r}
+#Join the long format dataframe with modified.metadata in order to link sample information to sample counts in one dataframe
+data_long_joined <- df_long %>%
+  left_join(., metadata.modified, by = c("samples" = "sample")) 
+```
+```{r}
+data_long_joined
+```
+```{r}
+data_long_joined %>% #filter(gene_name %in% genes_list) %>%
+  group_by(X,mouse_model) %>%
+  summarize(mean_FPKM = mean(FPKM), median_FPKM = median(FPKM)) %>%
+  arrange(-mean_FPKM)
+```
+```{r}
+#Here we can visualize the FPKM metrics of a gene we are interested in 
+data_long_joined %>%
+  filter(X == 'Slc1a2') %>%
+  ggplot(., aes(x = samples, y = FPKM, fill = mouse_model)) +
+  geom_col()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=4.5))
+```
+```{r}
+#We can also provide a list of genes that we are interested in to create a heat map
+data_long_joined  %>%
+  filter(X == 'Slc1a2') %>%
+  ggplot(., aes(x = samples, y = X, fill = FPKM)) +
+  geom_tile() +
+  scale_fill_gradient( low = "blue", high = "pink")+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=4.5))
+```
+```{r}
+data_long_joined %>% #filter(gene_name %in% genes_list) %>%
+  group_by(X,mouse_model) %>%
+  summarize(mean_FPKM = mean(FPKM), median_FPKM = median(FPKM)) %>%
+  arrange(-mean_FPKM)
+```
+

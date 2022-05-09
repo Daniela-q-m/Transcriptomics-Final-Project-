@@ -21,9 +21,16 @@ library(dendextend)
 ```
 
 ```{r}
-design_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design_TG.csv',sep=',',header=TRUE)
-
+#Daniela File path
+design_matrix<-read.table('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design_TG.csv',sep=',',header=TRUE)
 head(design_matrix)
+```
+
+```{r}
+#Tansnim Filte path
+#design_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design_TG.csv',sep=',',header=TRUE)
+
+#head(design_matrix)
 ```
 
 ```{r}
@@ -33,13 +40,18 @@ design_matrix$Sample<-NULL
 design_matrix
 
 
-
+```
+```{r}
+#Daniela file path 
+counts_matrix<-read.table("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
+counts_matrix
 ```
 
 ```{r}
-counts_matrix<-read.table("/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
+#Tasnim file path 
+#counts_matrix<-read.table("/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
 
-counts_matrix
+#counts_matrix
 ```
 
 
