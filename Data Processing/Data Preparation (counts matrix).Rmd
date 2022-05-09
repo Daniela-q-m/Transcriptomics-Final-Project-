@@ -1,0 +1,111 @@
+---
+title: "DESEQ2 Analysis, Tau/Amyloid Mouse Lines"
+output: html_notebook
+---
+
+The purpose of this notebook is to begin the data processing for downstram differential gene expression analysis with the data obtained from:
+
+Castanho I, Murray TK, Hannon E, Jeffries A et al. Transcriptional Signatures of Tau and Amyloid Neuropathology. Cell Rep 2020 Feb 11;30(6):2040-2054.e5. PMID: 32049030
+
+```{r}
+library(dplyr)
+```
+
+### Download files from HPC, read in files into R
+
+Transfer files from HPC to Google drive. The files that are being transferred here are the gene count files that were produced by STAR. 
+
+Import the counts for the J20 mouse line:
+
+```{r}
+#Open the file containing the SRA IDs of the J20 samples and rTg4510 samples
+J20_samples<-read.delim('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Data_Retrieval/SRR_Acc_List_J20_6m_12m.txt',header=FALSE)
+```
+
+```{r}
+J20_samples[1]
+```
+
+
+```{r}
+sample_names <-c(J20_samples[[1]]) #Select columns with [[]] to create vector from sample names column
+```
+
+```{r}
+#Loop over the folder containing the count data for each sample. Use the sample name from the SRR accession list to substiute sample name in the file path. Later we will use these file paths in order to build a count matrix. 
+for (sample in sample_names){
+  
+files_D<- c(files_D,paste('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/STAR_Counts/',sample,"ReadsPerGene.out.tab",sep=''))
+
+}
+```
+
+
+Create a matrix of gene counts from the count data outputted by STAR. We need to check whether the library preparation was stranded or unstranded. In order to do this, we can count the number of reads mapped to each strand in a given sample with awk:
+
+```{bash}
+[dq2033@log-2 SRR8512365]$ grep -v "N_" SRR8512365ReadsPerGene.out.tab | awk '{unst+=$2;forw+=$3;rev+=$4}END{print unst,forw,rev}'
+8779853 8870916 314680
+```
+8870916 Reads 1 (forward) were mapped to known genes and  314680 Reads 2 (reverse) were mapped to known genes. For our analysis, we will use the data coming from the forward strand. 
+
+
+### Join Read Counts from each sample into one matrix
+
+Every sample has its own gene count data in the form of a ReadsPerGene.out.tab file. A sample of what the ReadsPerGene.out.tab file looks like is seen below:
+
+```{r}
+read.table('/Users/danielaquijano/Documents/Final_Project_Files/SRR8512351ReadsPerGene.out.tab',sep="\t")
+```
+As established with the results of the awk command above, the output has to be chosen based on the strandedness of the data. This can be accomplished using the data.table library in order to select the column containing the gene names and mapping information (V1) and also the column containing the counts for forward reads (V3). An example of reading one of the count files is seen below. 
+
+```{r}
+fread('/Users/danielaquijano/Documents/Final_Project_Files/SRR8512351ReadsPerGene.out.tab',sep="\t", select = c("V1", "V3"))
+```
+
+```{r}
+install.packages("data.table") # Install data.table
+```
+```{r}
+library("data.table") 
+```
+
+Loop through the directory of files, open them, add the sample data to the count data matrix
+Only Import Selected Variables Using fread() Function of data.table Package.
+
+```{r}
+file.exists('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/STAR_Counts')
+```
+```{r}
+file.exists('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/STAR_Counts/SRR8512365ReadsPerGene.out.tab')
+```
+
+```{r}
+#Loop over the file list in order to extract the counts from each file. sspecified above the library is stranded so we will use the V3 column which contains the forward read counts. We will name each column using the SRR id from each sample stored in sample_names and a counter will be used to loop through each name in this list. The counter, i, is incremented after each iteration of the loop.
+i=1
+count_data<-data.frame(gene_names= fread('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/STAR_Counts/SRR8512365ReadsPerGene.out.tab',sep="\t",select = c('V1')))
+
+for (file in files_D) {
+  count_data[sample_names[i]]<-fread(file,sep="\t",select = c('V3'))
+  i=i+1
+}
+```
+
+
+
+count_data contains the gene counts for J20 mice.
+
+```{r}
+count_data
+```
+
+```{r}
+#Write dataframe containing J20 samples to a csv. Save in Count_Tables folder in GitHub repositroy
+write.csv(count_data,"/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/count_data.csv", row.names = FALSE)
+```
+
+
+
+
+
+
