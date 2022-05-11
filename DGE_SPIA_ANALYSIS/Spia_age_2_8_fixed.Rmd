@@ -224,6 +224,9 @@ head(sigOE_genes)
 
 ```
 
+```{r}
+nrow(sigOE)
+```
 
 ```{r}
 ## Run GO enrichment analysis 
@@ -247,7 +250,7 @@ cluster_summary <- data.frame(ego)
 
 ```
 ```{r}
-ego
+cluster_summary
 ```
 
 
