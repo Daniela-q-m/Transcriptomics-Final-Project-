@@ -343,7 +343,24 @@ cnetplot(ego,
          shadowtext = "all")+ggtitle('Enriched Genes when comparing J20 vs rTg4510 mice')+ theme(plot.title = element_text(size=30))+theme(text = element_text(size = 8))
 
 dev.off()
+
+
+
+plotP(spia_result, threshold=0.05) 
+
+
 ```
+
+```{r}
+library(enrichplot)
+ego2 = pairwise_termsim(ego)
+
+png("emapplot_J20vsrtg4510.png", width = 10, height = 12, units = 'in', res = 300)
+emapplot(ego2, showCategory = 20, colorEdge = TRUE)
+dev.off()
+```
+
+
 ```{r}
 p1
 ```
