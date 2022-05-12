@@ -21,7 +21,7 @@ library(dendextend)
 
 ```{r}
 #Daniela File path
-design_matrix<-read.table('/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design_TG (1).csv',sep=',',header=TRUE)
+design_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design_TG (1).csv',sep=',',header=TRUE)
 head(design_matrix)
 ```
 
@@ -36,7 +36,7 @@ design_matrix
 Import matrix containing the counts for all samples. These counts represent the forward strand counts since this was a stranded library. 
 
 ```{r}
-counts_matrix<-read.table("/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv",sep=',',header=TRUE)
+counts_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/Count_Tables/allcounts.csv',sep=',',header=TRUE)
 ```
 
 Because the numbers after the dot in the ensembl IDs represent versions of genes in certain annotations, we can remove these to more easily conduct our differential gene expression analysis. 
@@ -61,8 +61,7 @@ counts_matrix
 ```
 ```{r}
 design_matrix<-design_matrix[order(rownames(design_matrix)),]
-```
-```{r}
+
 design_matrix
 ```
 
@@ -70,7 +69,7 @@ design_matrix
 ```{r}
 dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
                               colData = design_matrix,
-                              design = ~  Model)
+                              design = ~ Model)
 dds
 ```
 Remove genes with counts less than 10
@@ -91,15 +90,23 @@ normalizedcounts.matrix <- counts(dds,normalized=T)
 ```
 
 ```{r}
-vst_dds <- vst(dds)
+vst_dds <- vst(dds, fitType = c("parametric"))
 dists <- dist(t(assay(vst_dds)))
+plotDispEsts(dds)
 
 ```
 
 
 ```{r}
-PCA_Genotype<-plotPCA(vst_dds,intgroup=c("Genotype"))+labs(title = "PCA of mice of different genotypes", color = "Group")+coord_fixed(ratio=3)
-PCA_Genotype
+library('ggplot2')
+
+png("PCA_J20vs_rTg4510.png",width = 8, height = 6, units = 'in', res = 300 )
+
+plotPCA(vst_dds,intgroup=c("Genotype"))+labs(title = "PCA of mice of different genotypes", color = "Group")+coord_fixed(ratio=3)
+
+dev.off()
+
+
 ```
 # Obtain results based on different contrasts
 
@@ -114,13 +121,17 @@ head(res1_ordered,200)
 ```
 ```{r}
 nrow(res1_ordered)
+
+res1_ordered <- na.omit(res1_ordered)
+
+nrow(res1_ordered)
 ```
 
 
 Filter the res1_ordered byp value to obtain only those genes with p value less than 0.05
 ```{r}
 #Filter Differentially Expressed Genes by p value 0.05
-res1_ordered_filtered <- res1_ordered[res1_ordered$pvalue<0.05,]
+res1_ordered_filtered <- res1_ordered[res1_ordered$padj<0.05,]
 ```
 See how many genes have p value equals to zero
 ```{r}
@@ -131,7 +142,7 @@ Genes with pvalue==0
 ```{r}
 res1_ordered_filtered_2
 ```
-Genes with pvalue<0.05
+Genes with padj<0.05
 ```{r}
 res1_ordered_filtered
 ```
@@ -141,15 +152,15 @@ res1_ordered_filtered
 
 Install Mouse annotation library:
 ```{r}
-BiocManager::install("org.Mm.eg.db")
+#BiocManager::install("org.Mm.eg.db")
 ```
 
 ```{r}
-install.packages("devtools")
-devtools::install_github("stephenturner/annotables")
+#install.packages("devtools")
+#devtools::install_github("stephenturner/annotables")
 ```
 ```{r}
-install.packages("ggnewscale")
+#install.packages("ggnewscale")
 ```
 
 ```{r}
@@ -207,7 +218,11 @@ enriched_genes_res1
 ```
 
 ```{r fig.width=15,fig.height=20}
-dotplot(ego, showCategory=30)+theme(text = element_text(size = 1)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))+ggtitle('Enriched genes when comparing rtg4510 and J20 mice')+ theme(plot.title = element_text(size=16))
+png("Enriched genes when comparing rtg4510 and J20 mice", width = 14, height = 16, units = 'in', res = 300)
+
+dotplot(ego, showCategory=30)+theme(text = element_text(size = 15)) +scale_y_discrete(labels=function(x) str_wrap(x, width=40))+ggtitle('Enriched genes when comparing rtg4510 and J20 mice')+ theme(plot.title = element_text(size=16))
+
+dev.off()
 ```
 
 #SPIA 
@@ -305,26 +320,27 @@ spia_result <- spia(de=sig_entrez, all=background_entrez, organism="mmu")
 ```
 
 ```{r}
-write.csv(spia_result, file = '/Users/danielaquijano/Documents/GitHub/Transcriptomics-Final-Project-/source_files/SPIA_J20_vs_TG.csv')
+write.csv(spia_result, file = '/Users/tasnimtabassum/Documents/Transcriptomics_SP22/SPIA_J20_vs_TG.csv')
 ```
 
 ```{r}
 spia_result
 ```
 ```{r}
-
+png("cnet_j20vsrtg.png", width = 16, height = 12, units = 'in', res = 300)
 cnetplot(ego, 
          categorySize="pvalue", 
          showCategory = 3,
          colorEdge = TRUE,
          circular = FALSE,
-         node_label = "category",
-         cex_category = 1.5,
+         node_label = "all",
+         cex_category = 1,
          cex_gene = 0.75,
-         cex_label_category = 1.5,
+         cex_label_category = 1,
          cex_label_gene = 0.75,
-         shadowtext = "all")+ggtitle('Enriched genes when comparing J20 and rtg4510 mice')
-         
+         shadowtext = "all")+ggtitle('Enriched Genes when comparing J20 vs rTg4510 mice')+ theme(plot.title = element_text(size=30))+theme(text = element_text(size = 8))
+
+dev.off()
 ```
 ```{r}
 p1
@@ -360,8 +376,8 @@ library(pheatmap)
 
 ```{r}
 
-tiff("Heatmap_J20_vs_rtg4510.tiff", width = 7, height = 7, units = 'in', res = 300)
+#tiff("Heatmap_J20_vs_rtg4510.tiff", width = 7, height = 7, units = 'in', res = 300)
 pheatmap(norm_counts_top_60, color=colorRampPalette(c("white", "maroon1", "darkmagenta"))(30), scale="row", cluster_cols = T, show_rownames = T,fontsize = 7,fontsize_row = 4, fontsize_col = 4,labels_row = rownames(dists),annotation_col =annotation_columns,main='Differentially Expressed Genes in J20 and rtg4510 mice' )
-dev.off()
+#dev.off()
 ```
 
