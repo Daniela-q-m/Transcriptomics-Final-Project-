@@ -320,7 +320,9 @@ spia_result <- spia(de=sig_entrez, all=background_entrez, organism="mmu")
 ```
 
 ```{r}
-write.csv(spia_result, file = '/Users/tasnimtabassum/Documents/Transcriptomics_SP22/SPIA_J20_vs_TG.csv')
+write.csv(spia_result, file ="SPIA_J20_vs_TG.csv")
+
+
 ```
 
 ```{r}
