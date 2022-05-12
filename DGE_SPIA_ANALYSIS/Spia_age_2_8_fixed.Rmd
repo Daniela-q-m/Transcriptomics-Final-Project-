@@ -20,7 +20,7 @@ head(design_matrix)
 
 ```{r}
 #Tasnim File path
-#design_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/Experimental_Design_TG.csv',sep=',',header=TRUE)
+design_matrix<-read.table('/Users/tasnimtabassum/Documents/Transcriptomics_SP22/GitHub/Transcriptomics-Final-Project-/source_files/Experimental_Design_TG (1).csv',sep=',',header=TRUE)
 
 #head(design_matrix)
 ```
