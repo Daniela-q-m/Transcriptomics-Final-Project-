@@ -26,10 +26,10 @@ fastq-dump -I --split-files --gzip $(</scratch/dq2033/transcriptomics/SRR_Acc_Li
 After the reads were downloaded, they had to be inspected for quality scores and adapters needed to be removed. First, fastp/intel/0.20.1 was used in order to trim adapter sequences. For each mouse model, a table was constructed. The table consisted of the SRA run ID, and the names for the paired-end reads. The fastp command was made so that it iterated through every line and column of the table to trim each sample and generate its corresponding output files. 
 
 The first 2 lines of the table:
-
+'''bash
 SRR8512365 SRR8512365_1.fastq.gz SRR8512365_2.fastq.gz
 SRR8512366 SRR8512366_1.fastq.gz SRR8512366_2.fastq.gz
-
+'''
 The fastp command that was used was:
 
 fastp -i $fqdir/$fq1 \
